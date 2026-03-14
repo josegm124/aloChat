@@ -1,0 +1,368 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: aloChat foundation stack - VPC, subnets, security groups and ECR repositories
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: alochat
+  EnvironmentName:
+    Type: String
+    Default: dev
+  VpcCidr:
+    Type: String
+    Default: 10.20.0.0/16
+  PublicSubnet1Cidr:
+    Type: String
+    Default: 10.20.1.0/24
+  PublicSubnet2Cidr:
+    Type: String
+    Default: 10.20.2.0/24
+  PrivateSubnet1Cidr:
+    Type: String
+    Default: 10.20.11.0/24
+  PrivateSubnet2Cidr:
+    Type: String
+    Default: 10.20.12.0/24
+  EnableNatGateway:
+    Type: String
+    AllowedValues: ['true', 'false']
+    Default: 'true'
+
+Conditions:
+  UseNatGateway: !Equals [!Ref EnableNatGateway, 'true']
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-vpc
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-igw
+
+  VpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref Vpc
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: !Ref PublicSubnet1Cidr
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-public-a
+      VpcId: !Ref Vpc
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: !Ref PublicSubnet2Cidr
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-public-b
+      VpcId: !Ref Vpc
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: !Ref PrivateSubnet1Cidr
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-private-a
+      VpcId: !Ref Vpc
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: !Ref PrivateSubnet2Cidr
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-private-b
+      VpcId: !Ref Vpc
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-public-rt
+
+  PublicDefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VpcGatewayAttachment
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-private-rt
+
+  NatElasticIp:
+    Type: AWS::EC2::EIP
+    Condition: UseNatGateway
+    Properties:
+      Domain: vpc
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Condition: UseNatGateway
+    Properties:
+      AllocationId: !GetAtt NatElasticIp.AllocationId
+      ConnectivityType: public
+      SubnetId: !Ref PublicSubnet1
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-nat
+
+  PrivateDefaultRoute:
+    Type: AWS::EC2::Route
+    Condition: UseNatGateway
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnet1
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnet2
+
+  ApplicationSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: App services security group
+      GroupName: !Sub ${ProjectName}-${EnvironmentName}-app-sg
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref Vpc
+
+  KafkaClientSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Kafka client and broker traffic
+      GroupName: !Sub ${ProjectName}-${EnvironmentName}-kafka-sg
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 9092
+          ToPort: 9098
+          SourceSecurityGroupId: !Ref ApplicationSecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref Vpc
+
+  RedisSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Redis inbound from application services
+      GroupName: !Sub ${ProjectName}-${EnvironmentName}-redis-sg
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref ApplicationSecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref Vpc
+
+  EndpointSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Interface endpoint inbound from application services
+      GroupName: !Sub ${ProjectName}-${EnvironmentName}-vpce-sg
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          SourceSecurityGroupId: !Ref ApplicationSecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref Vpc
+
+  SecretsManagerVpcEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref EndpointSecurityGroup
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.secretsmanager
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      VpcEndpointType: Interface
+      VpcId: !Ref Vpc
+
+  CloudWatchLogsVpcEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref EndpointSecurityGroup
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.logs
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      VpcEndpointType: Interface
+      VpcId: !Ref Vpc
+
+  EcrApiVpcEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref EndpointSecurityGroup
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.ecr.api
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      VpcEndpointType: Interface
+      VpcId: !Ref Vpc
+
+  EcrDkrVpcEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref EndpointSecurityGroup
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.ecr.dkr
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      VpcEndpointType: Interface
+      VpcId: !Ref Vpc
+
+  StsVpcEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref EndpointSecurityGroup
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.sts
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+      VpcEndpointType: Interface
+      VpcId: !Ref Vpc
+
+  S3GatewayEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      RouteTableIds:
+        - !Ref PrivateRouteTable
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
+      VpcEndpointType: Gateway
+      VpcId: !Ref Vpc
+
+  InboundAdapterRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      RepositoryName: !Sub ${ProjectName}/${EnvironmentName}/inbound-adapter
+
+  ProcessorRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      RepositoryName: !Sub ${ProjectName}/${EnvironmentName}/processor
+
+  AiOrchestratorRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      RepositoryName: !Sub ${ProjectName}/${EnvironmentName}/ai-orchestrator
+
+  OutboundDispatcherRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      RepositoryName: !Sub ${ProjectName}/${EnvironmentName}/outbound-dispatcher
+
+Outputs:
+  VpcId:
+    Value: !Ref Vpc
+    Export:
+      Name: !Sub ${AWS::StackName}-VpcId
+  PublicSubnetIds:
+    Value: !Join [",", [!Ref PublicSubnet1, !Ref PublicSubnet2]]
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicSubnetIds
+  PrivateSubnetIds:
+    Value: !Join [",", [!Ref PrivateSubnet1, !Ref PrivateSubnet2]]
+    Export:
+      Name: !Sub ${AWS::StackName}-PrivateSubnetIds
+  ApplicationSecurityGroupId:
+    Value: !Ref ApplicationSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-ApplicationSecurityGroupId
+  KafkaClientSecurityGroupId:
+    Value: !Ref KafkaClientSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-KafkaClientSecurityGroupId
+  RedisSecurityGroupId:
+    Value: !Ref RedisSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-RedisSecurityGroupId
+  EndpointSecurityGroupId:
+    Value: !Ref EndpointSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-EndpointSecurityGroupId
+  InboundAdapterRepositoryUri:
+    Value: !GetAtt InboundAdapterRepository.RepositoryUri
+  ProcessorRepositoryUri:
+    Value: !GetAtt ProcessorRepository.RepositoryUri
+  AiOrchestratorRepositoryUri:
+    Value: !GetAtt AiOrchestratorRepository.RepositoryUri
+  OutboundDispatcherRepositoryUri:
+    Value: !GetAtt OutboundDispatcherRepository.RepositoryUri

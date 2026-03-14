@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: aloChat tenant bootstrap stack - web signing secrets per tenant
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: alochat
+  EnvironmentName:
+    Type: String
+    Default: dev
+  TenantId:
+    Type: String
+  WebIngressHmacKey:
+    Type: String
+    NoEcho: true
+
+Resources:
+  WebIngressSigningSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: !Sub Web ingress HMAC signing key for tenant ${TenantId}
+      Name: !Sub ${ProjectName}/${EnvironmentName}/tenants/${TenantId}/channels/web/ingress-signing-key
+      SecretString: !Sub |
+        {"hmacKey":"${WebIngressHmacKey}"}
+
+Outputs:
+  WebIngressSigningSecretArn:
+    Value: !Ref WebIngressSigningSecret
+  WebIngressSigningSecretName:
+    Value: !Ref WebIngressSigningSecret

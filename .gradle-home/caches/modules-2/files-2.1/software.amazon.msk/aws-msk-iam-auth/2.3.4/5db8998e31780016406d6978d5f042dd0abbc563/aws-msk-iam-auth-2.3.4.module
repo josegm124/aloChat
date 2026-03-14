@@ -1,0 +1,167 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "software.amazon.msk",
+    "module": "aws-msk-iam-auth",
+    "version": "2.3.4",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "aws-msk-iam-auth-2.3.4.jar",
+          "url": "aws-msk-iam-auth-2.3.4.jar",
+          "size": 46221,
+          "sha512": "03c90a448a9c28ce97c28aa687ceb546b6e7f586a43c1e47c70c48579d8af435b815e3fef658b639551c99acff6fd5aeddb87aed114d617eeb0b34c759d5a4e6",
+          "sha256": "211025a81e1e9d673393bd86569fe776ae850361ad5ccab729b7f1b354fbbd8e",
+          "sha1": "8429cc86adee9145bffbaf35833364d6ec6e8467",
+          "md5": "97dfc13319a8f9e6a3a83e9ee49beb1f"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "software.amazon.awssdk",
+          "module": "bom",
+          "version": {
+            "requires": "2.32.26"
+          },
+          "attributes": {
+            "org.gradle.category": "platform"
+          },
+          "endorseStrictVersions": true
+        },
+        {
+          "group": "software.amazon.awssdk",
+          "module": "auth"
+        },
+        {
+          "group": "software.amazon.awssdk",
+          "module": "sso"
+        },
+        {
+          "group": "software.amazon.awssdk",
+          "module": "ssooidc"
+        },
+        {
+          "group": "software.amazon.awssdk",
+          "module": "sts"
+        },
+        {
+          "group": "com.fasterxml.jackson.core",
+          "module": "jackson-databind",
+          "version": {
+            "requires": "2.18.3"
+          }
+        },
+        {
+          "group": "org.slf4j",
+          "module": "slf4j-api",
+          "version": {
+            "requires": "1.7.25"
+          }
+        },
+        {
+          "group": "software.amazon.awssdk",
+          "module": "apache-client"
+        }
+      ],
+      "files": [
+        {
+          "name": "aws-msk-iam-auth-2.3.4.jar",
+          "url": "aws-msk-iam-auth-2.3.4.jar",
+          "size": 46221,
+          "sha512": "03c90a448a9c28ce97c28aa687ceb546b6e7f586a43c1e47c70c48579d8af435b815e3fef658b639551c99acff6fd5aeddb87aed114d617eeb0b34c759d5a4e6",
+          "sha256": "211025a81e1e9d673393bd86569fe776ae850361ad5ccab729b7f1b354fbbd8e",
+          "sha1": "8429cc86adee9145bffbaf35833364d6ec6e8467",
+          "md5": "97dfc13319a8f9e6a3a83e9ee49beb1f"
+        }
+      ]
+    },
+    {
+      "name": "shadowRuntimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "shadowed",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "aws-msk-iam-auth-2.3.4-all.jar",
+          "url": "aws-msk-iam-auth-2.3.4-all.jar",
+          "size": 13563604,
+          "sha512": "b4f07ba15ecb7626de6dcd5376841311e824fa1f91e3fbc4cc951a97513d60bb18380c8a3829d19978e2d544d11ee29f27ecefd3c2f623e529d11f49be290b74",
+          "sha256": "5756e01dc33c203f1e5fb7076c475b393e28e7d4ef528f3b604db6da5e979a6a",
+          "sha1": "131938573fd5be3dc257a24bd36a8b8ae122bb4d",
+          "md5": "0080fcfdb3aa521532fd3a082b70c073"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "aws-msk-iam-auth-2.3.4-sources.jar",
+          "url": "aws-msk-iam-auth-2.3.4-sources.jar",
+          "size": 27973,
+          "sha512": "708236949ec7a4619645591f7aa245cdaeda9a859d9157054e481f403e10d32461a9144fe7790aba8332712307d1da16aa88c5d73d4f3ea0d99435d5c8796d0f",
+          "sha256": "081cbe4a5a0fbf706f9c4ef98d541d48865264cf7c41d34e324cc662f5ddb22e",
+          "sha1": "c8a8eeb324ccfdb91848d5f5ba1498a1e0437781",
+          "md5": "eb4aa8a5c7b030e8f482d72edcc770f1"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "aws-msk-iam-auth-2.3.4-javadoc.jar",
+          "url": "aws-msk-iam-auth-2.3.4-javadoc.jar",
+          "size": 154211,
+          "sha512": "75fc37537e2f37010db5e9b839b0526d70bd1c36beab9b4d41b958b713d3660a49df1458acfea01be3c331deafcf71e6a4237444d637429d183ad5e27c67735a",
+          "sha256": "d38d4b360e03ef97bffc761c359f01eaf7e0b3b3a3b88511fa0a8c12ae8efda6",
+          "sha1": "1f54729cf6f2309de6fa76a9c6c4890de8634913",
+          "md5": "899a8be909bbb56f1df07f8d689d636c"
+        }
+      ]
+    }
+  ]
+}

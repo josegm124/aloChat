@@ -1,0 +1,85 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.github.resilience4j",
+    "module": "resilience4j-bulkhead",
+    "version": "2.3.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.4.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "io.github.resilience4j",
+          "module": "resilience4j-core",
+          "version": {
+            "requires": "2.3.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "resilience4j-bulkhead-2.3.0.jar",
+          "url": "resilience4j-bulkhead-2.3.0.jar",
+          "size": 56266,
+          "sha512": "c1aa54a6056f10bbc7a4ad702dce0d756a1829df1c7b6693a5fa6b3568c25d72f67cb6cd0507a3670f6d43a047a8577c968706f4a19bb52105e69f383f4c0474",
+          "sha256": "1ca4b0f7e15bd8da6a936571d09368d74fa0a3c2f117180c55fb806f3c4ae16a",
+          "sha1": "3e3cc6330e2c6088316f06e58f6d0b2c7fdc5b5b",
+          "md5": "39446409a41d010efb73874939f16a8d"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.slf4j",
+          "module": "slf4j-api",
+          "version": {
+            "requires": "1.7.30"
+          }
+        },
+        {
+          "group": "io.github.resilience4j",
+          "module": "resilience4j-core",
+          "version": {
+            "requires": "2.3.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "resilience4j-bulkhead-2.3.0.jar",
+          "url": "resilience4j-bulkhead-2.3.0.jar",
+          "size": 56266,
+          "sha512": "c1aa54a6056f10bbc7a4ad702dce0d756a1829df1c7b6693a5fa6b3568c25d72f67cb6cd0507a3670f6d43a047a8577c968706f4a19bb52105e69f383f4c0474",
+          "sha256": "1ca4b0f7e15bd8da6a936571d09368d74fa0a3c2f117180c55fb806f3c4ae16a",
+          "sha1": "3e3cc6330e2c6088316f06e58f6d0b2c7fdc5b5b",
+          "md5": "39446409a41d010efb73874939f16a8d"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'alochat'
+
+include('libs:message-contracts')
+include('tools:msk-admin')
+include('services:inbound-adapter')
+include('services:processor')
+include('services:ai-orchestrator')
+include('services:outbound-dispatcher')

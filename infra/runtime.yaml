@@ -1,0 +1,799 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: aloChat runtime stack - ECS Fargate, ALB and API Gateway for MVP services
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: alochat
+  EnvironmentName:
+    Type: String
+    Default: dev
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  PublicSubnetIds:
+    Type: CommaDelimitedList
+  PrivateSubnetIds:
+    Type: CommaDelimitedList
+  ApplicationSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  KafkaBootstrapServers:
+    Type: String
+  KafkaClusterArn:
+    Type: String
+  RedisPrimaryEndpoint:
+    Type: String
+  IdempotencyTableName:
+    Type: String
+  MessageAuditTableName:
+    Type: String
+  ConversationMemoryTableName:
+    Type: String
+  CampaignHintTableName:
+    Type: String
+  InboundAdapterImageUri:
+    Type: String
+  ProcessorImageUri:
+    Type: String
+  AiOrchestratorImageUri:
+    Type: String
+  OutboundDispatcherImageUri:
+    Type: String
+  WebTenantSecretPathPrefix:
+    Type: String
+    Default: alochat/dev/tenants
+  WebTenantSecretSuffix:
+    Type: String
+    Default: ingress-signing-key
+  OpenSearchCollectionEndpoint:
+    Type: String
+    Default: ''
+  KnowledgeIndexName:
+    Type: String
+    Default: kb_corpus
+  MemoryIndexName:
+    Type: String
+    Default: chat_memory
+  BedrockEmbeddingModelId:
+    Type: String
+    Default: amazon.titan-embed-text-v2:0
+  InboundAdapterDesiredCount:
+    Type: Number
+    Default: 1
+  ProcessorDesiredCount:
+    Type: Number
+    Default: 1
+  AiOrchestratorDesiredCount:
+    Type: Number
+    Default: 1
+  OutboundDispatcherDesiredCount:
+    Type: Number
+    Default: 1
+  ContainerCpu:
+    Type: Number
+    Default: 512
+  ContainerMemory:
+    Type: Number
+    Default: 1024
+  AwsRegion:
+    Type: String
+    Default: us-east-1
+  ApiThrottleBurstLimit:
+    Type: Number
+    Default: 50
+  ApiThrottleRateLimit:
+    Type: Number
+    Default: 20
+  WafRateLimit:
+    Type: Number
+    Default: 2000
+
+  TelegramBotToken:
+    Type: String
+    NoEcho: true
+
+Resources:
+  RuntimeCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${ProjectName}-${EnvironmentName}-cluster
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+
+  ServiceDiscoveryNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+      Name: !Sub ${EnvironmentName}.${ProjectName}.local
+      Vpc: !Ref VpcId
+
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Public load balancer security group
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  ApplicationIngressFromAlb:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ApplicationSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 8080
+      ToPort: 8082
+      SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+
+  InboundLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-alb
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref LoadBalancerSecurityGroup
+      Subnets: !Ref PublicSubnetIds
+      Type: application
+
+  InboundTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-inbound
+      Port: 8080
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !Ref VpcId
+      HealthCheckEnabled: true
+      HealthCheckPath: /actuator/health
+      Matcher:
+        HttpCode: 200
+
+  InboundHttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref InboundTargetGroup
+      LoadBalancerArn: !Ref InboundLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-http-api
+      ProtocolType: HTTP
+
+  HttpApiWebIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationMethod: POST
+      IntegrationType: HTTP_PROXY
+      IntegrationUri: !Sub http://${InboundLoadBalancer.DNSName}/api/v1/inbound/web
+      PayloadFormatVersion: '1.0'
+
+  HttpApiTelegramIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationMethod: POST
+      IntegrationType: HTTP_PROXY
+      IntegrationUri: !Sub http://${InboundLoadBalancer.DNSName}/api/v1/inbound/telegram
+      PayloadFormatVersion: '1.0'
+
+  HttpApiMetaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationMethod: POST
+      IntegrationType: HTTP_PROXY
+      IntegrationUri: !Sub http://${InboundLoadBalancer.DNSName}/api/v1/inbound/meta
+      PayloadFormatVersion: '1.0'
+
+  HttpApiWebStatusIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationMethod: GET
+      IntegrationType: HTTP_PROXY
+      IntegrationUri: !Sub http://${InboundLoadBalancer.DNSName}/api/v1/web/messages/{messageId}
+      PayloadFormatVersion: '1.0'
+
+  HttpApiWebRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: POST /api/v1/inbound/web
+      Target: !Sub integrations/${HttpApiWebIntegration}
+
+  HttpApiTelegramRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: POST /api/v1/inbound/telegram
+      Target: !Sub integrations/${HttpApiTelegramIntegration}
+
+  HttpApiMetaRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: POST /api/v1/inbound/meta
+      Target: !Sub integrations/${HttpApiMetaIntegration}
+
+  HttpApiWebStatusRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: GET /api/v1/web/messages/{messageId}
+      Target: !Sub integrations/${HttpApiWebStatusIntegration}
+
+  HttpApiAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${ProjectName}/${EnvironmentName}/http-api
+      RetentionInDays: 30
+
+  HttpApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      AutoDeploy: true
+      StageName: '$default'
+      DefaultRouteSettings:
+        DetailedMetricsEnabled: true
+        ThrottlingBurstLimit: !Ref ApiThrottleBurstLimit
+        ThrottlingRateLimit: !Ref ApiThrottleRateLimit
+      AccessLogSettings:
+        DestinationArn: !GetAtt HttpApiAccessLogGroup.Arn
+        Format: >-
+          {"requestId":"$context.requestId","ip":"$context.identity.sourceIp","routeKey":"$context.routeKey","status":"$context.status","requestTime":"$context.requestTime","integrationError":"$context.integrationErrorMessage"}
+
+  InboundWebAcl:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-inbound-waf
+      Scope: REGIONAL
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub ${ProjectName}-${EnvironmentName}-inbound-waf
+        SampledRequestsEnabled: true
+      Rules:
+        - Name: AWSManagedCommon
+          Priority: 0
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              Name: AWSManagedRulesCommonRuleSet
+              VendorName: AWS
+              ScopeDownStatement:
+                NotStatement:
+                  Statement:
+                    ByteMatchStatement:
+                      SearchString: /api/v1/inbound/telegram
+                      FieldToMatch:
+                        UriPath: {}
+                      PositionalConstraint: EXACTLY
+                      TextTransformations:
+                        - Priority: 0
+                          Type: NONE
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: managed-common
+            SampledRequestsEnabled: true
+        - Name: RateLimit
+          Priority: 1
+          Action:
+            Block: {}
+          Statement:
+            RateBasedStatement:
+              AggregateKeyType: IP
+              Limit: !Ref WafRateLimit
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: rate-limit
+            SampledRequestsEnabled: true
+
+  InboundWebAclAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Properties:
+      ResourceArn: !Ref InboundLoadBalancer
+      WebACLArn: !GetAtt InboundWebAcl.Arn
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      RoleName: !Sub ${ProjectName}-${EnvironmentName}-ecs-execution-role
+
+  InboundTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${ProjectName}-${EnvironmentName}-inbound-access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${MessageAuditTableName}
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub arn:aws:secretsmanager:${AwsRegion}:${AWS::AccountId}:secret:${WebTenantSecretPathPrefix}/*
+              - Effect: Allow
+                Action:
+                  - kafka-cluster:Connect
+                  - kafka-cluster:DescribeCluster
+                  - kafka-cluster:DescribeTopic
+                  - kafka-cluster:DescribeTopicDynamicConfiguration
+                  - kafka-cluster:CreateTopic
+                  - kafka-cluster:AlterTopic
+                  - kafka-cluster:DescribeGroup
+                  - kafka-cluster:AlterGroup
+                  - kafka-cluster:CreateGroup
+                  - kafka-cluster:WriteData
+                  - kafka-cluster:ReadData
+                Resource: '*'
+      RoleName: !Sub ${ProjectName}-${EnvironmentName}-inbound-task-role
+
+  ProcessorTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${ProjectName}-${EnvironmentName}-processor-dynamodb
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${IdempotencyTableName}
+                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${MessageAuditTableName}
+              - Effect: Allow
+                Action:
+                  - kafka-cluster:Connect
+                  - kafka-cluster:DescribeCluster
+                  - kafka-cluster:DescribeTopic
+                  - kafka-cluster:DescribeTopicDynamicConfiguration
+                  - kafka-cluster:CreateTopic
+                  - kafka-cluster:AlterTopic
+                  - kafka-cluster:DescribeGroup
+                  - kafka-cluster:AlterGroup
+                  - kafka-cluster:CreateGroup
+                  - kafka-cluster:WriteData
+                  - kafka-cluster:ReadData
+                Resource: '*'
+      RoleName: !Sub ${ProjectName}-${EnvironmentName}-processor-task-role
+
+  AiTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${ProjectName}-${EnvironmentName}-ai-dynamodb
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${MessageAuditTableName}
+                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${ConversationMemoryTableName}
+                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${CampaignHintTableName}
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - aoss:APIAccessAll
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - kafka-cluster:Connect
+                  - kafka-cluster:DescribeCluster
+                  - kafka-cluster:DescribeTopic
+                  - kafka-cluster:DescribeTopicDynamicConfiguration
+                  - kafka-cluster:CreateTopic
+                  - kafka-cluster:AlterTopic
+                  - kafka-cluster:DescribeGroup
+                  - kafka-cluster:AlterGroup
+                  - kafka-cluster:CreateGroup
+                  - kafka-cluster:WriteData
+                  - kafka-cluster:ReadData
+                Resource: '*'
+      RoleName: !Sub ${ProjectName}-${EnvironmentName}-ai-task-role
+
+  OutboundTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${ProjectName}-${EnvironmentName}-outbound-dynamodb
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource:
+                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${MessageAuditTableName}
+              - Effect: Allow
+                Action:
+                  - kafka-cluster:Connect
+                  - kafka-cluster:DescribeCluster
+                  - kafka-cluster:DescribeTopic
+                  - kafka-cluster:DescribeTopicDynamicConfiguration
+                  - kafka-cluster:CreateTopic
+                  - kafka-cluster:AlterTopic
+                  - kafka-cluster:DescribeGroup
+                  - kafka-cluster:AlterGroup
+                  - kafka-cluster:CreateGroup
+                  - kafka-cluster:WriteData
+                  - kafka-cluster:ReadData
+                Resource: '*'
+      RoleName: !Sub ${ProjectName}-${EnvironmentName}-outbound-task-role
+
+  InboundTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Cpu: !Ref ContainerCpu
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      Family: !Sub ${ProjectName}-${EnvironmentName}-inbound-adapter
+      Memory: !Ref ContainerMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt InboundTaskRole.Arn
+      ContainerDefinitions:
+        - Name: inbound-adapter
+          Image: !Ref InboundAdapterImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8080
+              Protocol: tcp
+          Environment:
+            - Name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              Value: !Ref KafkaBootstrapServers
+            - Name: ALOCHAT_KAFKA_SECURITY_PROTOCOL
+              Value: SASL_SSL
+            - Name: ALOCHAT_KAFKA_SASL_MECHANISM
+              Value: AWS_MSK_IAM
+            - Name: ALOCHAT_KAFKA_SASL_JAAS_CONFIG
+              Value: software.amazon.msk.auth.iam.IAMLoginModule required;
+            - Name: ALOCHAT_KAFKA_SASL_CALLBACK_HANDLER
+              Value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+            - Name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
+              Value: health,info,prometheus
+            - Name: ALOCHAT_TOPICS_NORMALIZED
+              Value: messages.ingress.normalized
+            - Name: ALOCHAT_TOPICS_RETRY_SHORT
+              Value: messages.retry.short
+            - Name: ALOCHAT_TOPICS_RETRY_LONG
+              Value: messages.retry.long
+            - Name: ALOCHAT_TOPICS_DLQ
+              Value: messages.dlq
+            - Name: ALOCHAT_AWS_REGION
+              Value: !Ref AwsRegion
+            - Name: ALOCHAT_DYNAMODB_MESSAGE_AUDIT_TABLE
+              Value: !Ref MessageAuditTableName
+            - Name: ALOCHAT_WEB_SECRET_PREFIX
+              Value: !Ref WebTenantSecretPathPrefix
+            - Name: ALOCHAT_WEB_SECRET_SUFFIX
+              Value: !Ref WebTenantSecretSuffix
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub /aws/alochat/${EnvironmentName}/inbound-adapter
+              awslogs-region: !Ref AwsRegion
+              awslogs-stream-prefix: ecs
+
+  ProcessorTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Cpu: !Ref ContainerCpu
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      Family: !Sub ${ProjectName}-${EnvironmentName}-processor
+      Memory: !Ref ContainerMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt ProcessorTaskRole.Arn
+      ContainerDefinitions:
+        - Name: processor
+          Image: !Ref ProcessorImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8081
+              Protocol: tcp
+          Environment:
+            - Name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              Value: !Ref KafkaBootstrapServers
+            - Name: ALOCHAT_KAFKA_SECURITY_PROTOCOL
+              Value: SASL_SSL
+            - Name: ALOCHAT_KAFKA_SASL_MECHANISM
+              Value: AWS_MSK_IAM
+            - Name: ALOCHAT_KAFKA_SASL_JAAS_CONFIG
+              Value: software.amazon.msk.auth.iam.IAMLoginModule required;
+            - Name: ALOCHAT_KAFKA_SASL_CALLBACK_HANDLER
+              Value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+            - Name: SPRING_DATA_REDIS_HOST
+              Value: !Ref RedisPrimaryEndpoint
+            - Name: ALOCHAT_DYNAMODB_IDEMPOTENCY_TABLE
+              Value: !Ref IdempotencyTableName
+            - Name: ALOCHAT_DYNAMODB_MESSAGE_AUDIT_TABLE
+              Value: !Ref MessageAuditTableName
+            - Name: ALOCHAT_TOPICS_NORMALIZED
+              Value: messages.ingress.normalized
+            - Name: ALOCHAT_TOPICS_AI
+              Value: messages.processing.ai
+            - Name: ALOCHAT_TOPICS_OUTBOUND
+              Value: messages.outbound.dispatch
+            - Name: ALOCHAT_TOPICS_RETRY_SHORT
+              Value: messages.retry.short
+            - Name: ALOCHAT_TOPICS_RETRY_LONG
+              Value: messages.retry.long
+            - Name: ALOCHAT_TOPICS_DLQ
+              Value: messages.dlq
+            - Name: ALOCHAT_AWS_REGION
+              Value: !Ref AwsRegion
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub /aws/alochat/${EnvironmentName}/processor
+              awslogs-region: !Ref AwsRegion
+              awslogs-stream-prefix: ecs
+
+  AiTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Cpu: !Ref ContainerCpu
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      Family: !Sub ${ProjectName}-${EnvironmentName}-ai-orchestrator
+      Memory: !Ref ContainerMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt AiTaskRole.Arn
+      ContainerDefinitions:
+        - Name: ai-orchestrator
+          Image: !Ref AiOrchestratorImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8083
+              Protocol: tcp
+          Environment:
+            - Name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              Value: !Ref KafkaBootstrapServers
+            - Name: ALOCHAT_KAFKA_SECURITY_PROTOCOL
+              Value: SASL_SSL
+            - Name: ALOCHAT_KAFKA_SASL_MECHANISM
+              Value: AWS_MSK_IAM
+            - Name: ALOCHAT_KAFKA_SASL_JAAS_CONFIG
+              Value: software.amazon.msk.auth.iam.IAMLoginModule required;
+            - Name: ALOCHAT_KAFKA_SASL_CALLBACK_HANDLER
+              Value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+            - Name: ALOCHAT_DYNAMODB_MESSAGE_AUDIT_TABLE
+              Value: !Ref MessageAuditTableName
+            - Name: ALOCHAT_DYNAMODB_CONVERSATION_MEMORY_TABLE
+              Value: !Ref ConversationMemoryTableName
+            - Name: ALOCHAT_DYNAMODB_CAMPAIGN_HINT_TABLE
+              Value: !Ref CampaignHintTableName
+            - Name: ALOCHAT_TOPICS_AI
+              Value: messages.processing.ai
+            - Name: ALOCHAT_TOPICS_OUTBOUND
+              Value: messages.outbound.dispatch
+            - Name: ALOCHAT_TOPICS_RETRY_SHORT
+              Value: messages.retry.short
+            - Name: ALOCHAT_TOPICS_RETRY_LONG
+              Value: messages.retry.long
+            - Name: ALOCHAT_TOPICS_DLQ
+              Value: messages.dlq
+            - Name: ALOCHAT_AWS_REGION
+              Value: !Ref AwsRegion
+            - Name: ALOCHAT_AI_OPENSEARCH_ENDPOINT
+              Value: !Ref OpenSearchCollectionEndpoint
+            - Name: ALOCHAT_AI_OPENSEARCH_KNOWLEDGE_INDEX
+              Value: !Ref KnowledgeIndexName
+            - Name: ALOCHAT_AI_OPENSEARCH_MEMORY_INDEX
+              Value: !Ref MemoryIndexName
+            - Name: ALOCHAT_AI_BEDROCK_EMBEDDING_MODEL_ID
+              Value: !Ref BedrockEmbeddingModelId
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub /aws/alochat/${EnvironmentName}/ai-orchestrator
+              awslogs-region: !Ref AwsRegion
+              awslogs-stream-prefix: ecs
+
+  OutboundTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Cpu: !Ref ContainerCpu
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      Family: !Sub ${ProjectName}-${EnvironmentName}-outbound-dispatcher
+      Memory: !Ref ContainerMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt OutboundTaskRole.Arn
+      ContainerDefinitions:
+        - Name: outbound-dispatcher
+          Image: !Ref OutboundDispatcherImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8082
+              Protocol: tcp
+          Environment:
+            - Name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              Value: !Ref KafkaBootstrapServers
+            - Name: ALOCHAT_KAFKA_SECURITY_PROTOCOL
+              Value: SASL_SSL
+            - Name: ALOCHAT_KAFKA_SASL_MECHANISM
+              Value: AWS_MSK_IAM
+            - Name: ALOCHAT_KAFKA_SASL_JAAS_CONFIG
+              Value: software.amazon.msk.auth.iam.IAMLoginModule required;
+            - Name: ALOCHAT_KAFKA_SASL_CALLBACK_HANDLER
+              Value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
+            - Name: SPRING_DATA_REDIS_HOST
+              Value: !Ref RedisPrimaryEndpoint
+            - Name: ALOCHAT_DYNAMODB_MESSAGE_AUDIT_TABLE
+              Value: !Ref MessageAuditTableName
+            - Name: ALOCHAT_TOPICS_OUTBOUND
+              Value: messages.outbound.dispatch
+            - Name: ALOCHAT_TOPICS_RETRY_SHORT
+              Value: messages.retry.short
+            - Name: ALOCHAT_TOPICS_RETRY_LONG
+              Value: messages.retry.long
+            - Name: ALOCHAT_TOPICS_DLQ
+              Value: messages.dlq
+            - Name: ALOCHAT_AWS_REGION
+              Value: !Ref AwsRegion
+            - Name: ALOCHAT_TELEGRAM_BOT_TOKEN
+              Value: !Ref TelegramBotToken
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub /aws/alochat/${EnvironmentName}/outbound-dispatcher
+              awslogs-region: !Ref AwsRegion
+              awslogs-stream-prefix: ecs
+
+  InboundService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - InboundHttpListener
+    Properties:
+      Cluster: !Ref RuntimeCluster
+      DesiredCount: !Ref InboundAdapterDesiredCount
+      EnableExecuteCommand: true
+      LaunchType: FARGATE
+      LoadBalancers:
+        - ContainerName: inbound-adapter
+          ContainerPort: 8080
+          TargetGroupArn: !Ref InboundTargetGroup
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !Ref ApplicationSecurityGroupId
+          Subnets: !Ref PrivateSubnetIds
+      ServiceName: !Sub ${ProjectName}-${EnvironmentName}-inbound-adapter
+      TaskDefinition: !Ref InboundTaskDefinition
+
+  ProcessorService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref RuntimeCluster
+      DesiredCount: !Ref ProcessorDesiredCount
+      EnableExecuteCommand: true
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !Ref ApplicationSecurityGroupId
+          Subnets: !Ref PrivateSubnetIds
+      ServiceName: !Sub ${ProjectName}-${EnvironmentName}-processor
+      TaskDefinition: !Ref ProcessorTaskDefinition
+
+  AiService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref RuntimeCluster
+      DesiredCount: !Ref AiOrchestratorDesiredCount
+      EnableExecuteCommand: true
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !Ref ApplicationSecurityGroupId
+          Subnets: !Ref PrivateSubnetIds
+      ServiceName: !Sub ${ProjectName}-${EnvironmentName}-ai-orchestrator
+      TaskDefinition: !Ref AiTaskDefinition
+
+  OutboundService:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Ref RuntimeCluster
+      DesiredCount: !Ref OutboundDispatcherDesiredCount
+      EnableExecuteCommand: true
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !Ref ApplicationSecurityGroupId
+          Subnets: !Ref PrivateSubnetIds
+      ServiceName: !Sub ${ProjectName}-${EnvironmentName}-outbound-dispatcher
+      TaskDefinition: !Ref OutboundTaskDefinition
+
+Outputs:
+  ClusterName:
+    Value: !Ref RuntimeCluster
+  HttpApiUrl:
+    Value: !GetAtt HttpApi.ApiEndpoint
+  LoadBalancerDnsName:
+    Value: !GetAtt InboundLoadBalancer.DNSName
+  InboundServiceName:
+    Value: !Ref InboundService
+  ProcessorServiceName:
+    Value: !Ref ProcessorService
+  AiServiceName:
+    Value: !Ref AiService
+  AiTaskRoleArn:
+    Value: !GetAtt AiTaskRole.Arn
+  OutboundServiceName:
+    Value: !Ref OutboundService
+  OpenSearchCollectionEndpoint:
+    Value: !Ref OpenSearchCollectionEndpoint

@@ -1,0 +1,190 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: aloChat data stack - DynamoDB, ElastiCache Redis and raw payload bucket
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: alochat
+  EnvironmentName:
+    Type: String
+    Default: dev
+  PrivateSubnetIds:
+    Type: CommaDelimitedList
+    Description: Private subnets created by foundation stack
+  RedisSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Redis security group created by foundation stack
+  RedisNodeType:
+    Type: String
+    Default: cache.t4g.small
+  RawPayloadExpirationDays:
+    Type: Number
+    Default: 7
+
+Resources:
+  IdempotencyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: idempotencyKey
+          AttributeType: S
+      KeySchema:
+        - AttributeName: idempotencyKey
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      TableName: !Sub ${ProjectName}-${EnvironmentName}-idempotency
+
+  MessageAuditTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: messageId
+          AttributeType: S
+        - AttributeName: conversationId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: messageId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: ConversationIdIndex
+          KeySchema:
+            - AttributeName: conversationId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      TableName: !Sub ${ProjectName}-${EnvironmentName}-message-audit
+
+  ConversationMemoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: memoryKey
+          AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: memoryKey
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: UserIdIndex
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      TableName: !Sub ${ProjectName}-${EnvironmentName}-conversation-memory
+
+  CampaignHintTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: hintId
+          AttributeType: S
+        - AttributeName: memoryKey
+          AttributeType: S
+      KeySchema:
+        - AttributeName: hintId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: MemoryKeyIndex
+          KeySchema:
+            - AttributeName: memoryKey
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      TableName: !Sub ${ProjectName}-${EnvironmentName}-campaign-hints
+
+  RawPayloadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${ProjectName}-${EnvironmentName}-raw-payloads-${AWS::AccountId}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireRawPayloads
+            Status: Enabled
+            ExpirationInDays: !Ref RawPayloadExpirationDays
+      VersioningConfiguration:
+        Status: Enabled
+
+  RedisSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      CacheSubnetGroupName: !Sub ${ProjectName}-${EnvironmentName}-redis-subnets
+      Description: Redis subnets for aloChat
+      SubnetIds: !Ref PrivateSubnetIds
+
+  RedisReplicationGroup:
+    Type: AWS::ElastiCache::ReplicationGroup
+    Properties:
+      AtRestEncryptionEnabled: true
+      AutoMinorVersionUpgrade: true
+      CacheNodeType: !Ref RedisNodeType
+      CacheSubnetGroupName: !Ref RedisSubnetGroup
+      Engine: redis
+      EngineVersion: '7.1'
+      MultiAZEnabled: false
+      NumNodeGroups: 1
+      ReplicasPerNodeGroup: 0
+      ReplicationGroupDescription: !Sub ${ProjectName}-${EnvironmentName} conversation state redis
+      ReplicationGroupId: !Sub ${ProjectName}-${EnvironmentName}-redis
+      SnapshotRetentionLimit: 7
+      SnapshotWindow: 03:00-04:00
+      SecurityGroupIds:
+        - !Ref RedisSecurityGroupId
+      TransitEncryptionEnabled: true
+
+Outputs:
+  IdempotencyTableName:
+    Value: !Ref IdempotencyTable
+    Export:
+      Name: !Sub ${AWS::StackName}-IdempotencyTableName
+  MessageAuditTableName:
+    Value: !Ref MessageAuditTable
+    Export:
+      Name: !Sub ${AWS::StackName}-MessageAuditTableName
+  ConversationMemoryTableName:
+    Value: !Ref ConversationMemoryTable
+    Export:
+      Name: !Sub ${AWS::StackName}-ConversationMemoryTableName
+  CampaignHintTableName:
+    Value: !Ref CampaignHintTable
+    Export:
+      Name: !Sub ${AWS::StackName}-CampaignHintTableName
+  RawPayloadBucketName:
+    Value: !Ref RawPayloadBucket
+  RedisPrimaryEndpoint:
+    Value: !GetAtt RedisReplicationGroup.PrimaryEndPoint.Address
+    Export:
+      Name: !Sub ${AWS::StackName}-RedisPrimaryEndpoint
+  RedisPort:
+    Value: !GetAtt RedisReplicationGroup.PrimaryEndPoint.Port
+    Export:
+      Name: !Sub ${AWS::StackName}-RedisPort

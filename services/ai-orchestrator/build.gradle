@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.11'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.google.cloud.tools.jib' version '3.4.5'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+    implementation project(':libs:message-contracts')
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'software.amazon.msk:aws-msk-iam-auth:2.3.4'
+    implementation platform('software.amazon.awssdk:bom:2.32.20')
+    implementation 'software.amazon.awssdk:auth'
+    implementation 'software.amazon.awssdk:dynamodb'
+    implementation 'software.amazon.awssdk:regions'
+    implementation 'software.amazon.awssdk:url-connection-client'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+jib {
+    from {
+        image = 'eclipse-temurin:21-jre'
+    }
+    to {
+        image = providers.systemProperty('jib.to.image').orElse(providers.environmentVariable('JIB_TO_IMAGE')).getOrElse('alochat/ai-orchestrator:local')
+    }
+    container {
+        ports = ['8083']
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+    }
+}

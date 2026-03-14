@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: aloChat AI RAG stack - S3 knowledge corpus and OpenSearch Serverless collection for vector retrieval
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: alochat
+  EnvironmentName:
+    Type: String
+    Default: dev
+  CollectionName:
+    Type: String
+    Default: alochat-dev-rag
+  KnowledgeIndexName:
+    Type: String
+    Default: kb_corpus
+  MemoryIndexName:
+    Type: String
+    Default: chat_memory
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  PrivateSubnetIds:
+    Type: CommaDelimitedList
+  VpcEndpointSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  AiAccessPrincipalArn:
+    Type: String
+
+Resources:
+  KnowledgeCorpusBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${ProjectName}-${EnvironmentName}-knowledge-corpus-${AWS::AccountId}
+
+  VectorEncryptionPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-vector-encryption
+      Type: encryption
+      Policy: !Sub >
+        {"Rules":[{"ResourceType":"collection","Resource":["collection/${CollectionName}"]}],"AWSOwnedKey":true}
+
+  VectorNetworkPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-vector-network
+      Type: network
+      Policy: !Sub >
+        [{"Rules":[{"ResourceType":"collection","Resource":["collection/${CollectionName}"]},{"ResourceType":"dashboard","Resource":["collection/${CollectionName}"]}],"AllowFromPublic":false,"SourceVPCEs":["${VectorVpcEndpoint}"]}]
+
+  VectorAccessPolicy:
+    Type: AWS::OpenSearchServerless::AccessPolicy
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-vector-access
+      Type: data
+      Policy: !Sub >
+        [{"Rules":[{"ResourceType":"collection","Resource":["collection/${CollectionName}"],"Permission":["aoss:CreateCollectionItems","aoss:DeleteCollectionItems","aoss:DescribeCollectionItems","aoss:UpdateCollectionItems"]},{"ResourceType":"index","Resource":["index/${CollectionName}/*"],"Permission":["aoss:CreateIndex","aoss:DeleteIndex","aoss:DescribeIndex","aoss:ReadDocument","aoss:WriteDocument","aoss:UpdateIndex"]}],"Principal":["${AiAccessPrincipalArn}"]}]
+
+  VectorVpcEndpoint:
+    Type: AWS::OpenSearchServerless::VpcEndpoint
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-aoss-vpce
+      SecurityGroupIds:
+        - !Ref VpcEndpointSecurityGroupId
+      SubnetIds: !Ref PrivateSubnetIds
+      VpcId: !Ref VpcId
+
+  VectorCollection:
+    Type: AWS::OpenSearchServerless::Collection
+    DependsOn:
+      - VectorEncryptionPolicy
+      - VectorNetworkPolicy
+      - VectorAccessPolicy
+    Properties:
+      Name: !Ref CollectionName
+      Description: !Sub ${ProjectName}-${EnvironmentName} vector collection for knowledge base and chat memory
+      Type: VECTORSEARCH
+
+Outputs:
+  KnowledgeCorpusBucketName:
+    Value: !Ref KnowledgeCorpusBucket
+    Export:
+      Name: !Sub ${AWS::StackName}-KnowledgeCorpusBucketName
+  OpenSearchCollectionArn:
+    Value: !GetAtt VectorCollection.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-OpenSearchCollectionArn
+  OpenSearchCollectionEndpoint:
+    Value: !GetAtt VectorCollection.CollectionEndpoint
+    Export:
+      Name: !Sub ${AWS::StackName}-OpenSearchCollectionEndpoint
+  OpenSearchDashboardEndpoint:
+    Value: !GetAtt VectorCollection.DashboardEndpoint
+  KnowledgeIndexName:
+    Value: !Ref KnowledgeIndexName
+  MemoryIndexName:
+    Value: !Ref MemoryIndexName
+  VectorVpcEndpointId:
+    Value: !Ref VectorVpcEndpoint

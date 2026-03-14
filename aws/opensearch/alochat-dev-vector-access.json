@@ -1,0 +1,40 @@
+[
+  {
+    "Rules": [
+      {
+        "Resource": [
+          "collection/alochat-dev-rag",
+          "collection/alochat-dev-ai-rag"
+        ],
+        "Permission": [
+          "aoss:CreateCollectionItems",
+          "aoss:DeleteCollectionItems",
+          "aoss:DescribeCollectionItems",
+          "aoss:UpdateCollectionItems"
+        ],
+        "ResourceType": "collection"
+      },
+      {
+        "Resource": [
+          "index/alochat-dev-rag/*",
+          "index/alochat-dev-ai-rag/*"
+        ],
+        "Permission": [
+          "aoss:CreateIndex",
+          "aoss:DeleteIndex",
+          "aoss:DescribeIndex",
+          "aoss:ReadDocument",
+          "aoss:WriteDocument",
+          "aoss:UpdateIndex"
+        ],
+        "ResourceType": "index"
+      }
+    ],
+    "Principal": [
+      "arn:aws:iam::668778694151:role/alochat-dev-ai-task-role",
+      "arn:aws:iam::668778694151:role/alochat-dev-inbound-task-role",
+      "arn:aws:iam::668778694151:role/alochat-dev-ecs-execution-role",
+      "arn:aws:iam::668778694151:user/laloDev"
+    ]
+  }
+]

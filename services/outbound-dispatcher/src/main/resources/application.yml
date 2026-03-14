@@ -1,0 +1,86 @@
+spring:
+  application:
+    name: outbound-dispatcher
+  threads:
+    virtual:
+      enabled: true
+  kafka:
+    bootstrap-servers: localhost:19092
+    properties:
+      security.protocol: ${ALOCHAT_KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      sasl.mechanism: ${ALOCHAT_KAFKA_SASL_MECHANISM:}
+      sasl.jaas.config: ${ALOCHAT_KAFKA_SASL_JAAS_CONFIG:}
+      sasl.client.callback.handler.class: ${ALOCHAT_KAFKA_SASL_CALLBACK_HANDLER:}
+    consumer:
+      group-id: alochat-outbound-dispatcher-v1
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.alochat.contracts.message
+        spring.json.value.default.type: com.alochat.contracts.message.MessageEnvelope
+    listener:
+      ack-mode: record
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      ssl:
+        enabled: ${ALOCHAT_REDIS_SSL_ENABLED:true}
+
+server:
+  port: 8082
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+alochat:
+  aws:
+    region: us-east-1
+  topics:
+    outbound: messages.outbound.dispatch
+    retry-short: messages.retry.short
+    retry-long: messages.retry.long
+    dlq: messages.dlq
+  dynamodb:
+    message-audit-table: alochat-dev-message-audit
+  telegram:
+    bot-username: AloChat23Bot
+    api-base-url: https://api.telegram.org
+  kafka:
+    retry-groups:
+      short: alochat-outbound-retry-short-v1
+      long: alochat-outbound-retry-long-v1
+    retry-delay:
+      short-ms: 2000
+      long-ms: 10000
+
+resilience4j:
+  retry:
+    instances:
+      telegramDispatch:
+        max-attempts: 3
+        wait-duration: 500ms
+        retry-exceptions:
+          - java.lang.IllegalStateException
+          - org.springframework.web.client.RestClientException
+  circuitbreaker:
+    instances:
+      telegramDispatch:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 2

@@ -1,0 +1,69 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.github.resilience4j",
+    "module": "resilience4j-circularbuffer",
+    "version": "2.3.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.4.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "resilience4j-circularbuffer-2.3.0.jar",
+          "url": "resilience4j-circularbuffer-2.3.0.jar",
+          "size": 12312,
+          "sha512": "fd98c5962776ec6dff723f51e4e454a46f56318ba6178cdbaf93fcf93a5be9c987489b38f4188b9dbffd5586d3c328618ae126d7d721357d6b82c3bb5790c2d9",
+          "sha256": "fa3610c7f175e8f053c3ff93ebe352d51a224aee6c99dcbfc5a9faf67a1e74c3",
+          "sha1": "e6aa46ad14a40599fc5a4806e8132f5fe3aa649a",
+          "md5": "03ce1af6aba5850748c192b2d73701f3"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.slf4j",
+          "module": "slf4j-api",
+          "version": {
+            "requires": "1.7.30"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "resilience4j-circularbuffer-2.3.0.jar",
+          "url": "resilience4j-circularbuffer-2.3.0.jar",
+          "size": 12312,
+          "sha512": "fd98c5962776ec6dff723f51e4e454a46f56318ba6178cdbaf93fcf93a5be9c987489b38f4188b9dbffd5586d3c328618ae126d7d721357d6b82c3bb5790c2d9",
+          "sha256": "fa3610c7f175e8f053c3ff93ebe352d51a224aee6c99dcbfc5a9faf67a1e74c3",
+          "sha1": "e6aa46ad14a40599fc5a4806e8132f5fe3aa649a",
+          "md5": "03ce1af6aba5850748c192b2d73701f3"
+        }
+      ]
+    }
+  ]
+}

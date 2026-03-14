@@ -1,0 +1,69 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.github.resilience4j",
+    "module": "resilience4j-annotations",
+    "version": "2.3.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.4.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "resilience4j-annotations-2.3.0.jar",
+          "url": "resilience4j-annotations-2.3.0.jar",
+          "size": 11357,
+          "sha512": "8e3af3650228fa690f71eaeb5996b64d2b3db094b03a7f9602cc6859398a23a495b5df14cae31c7da18f0b63d687f72fdd5665aec06489d0353d231f52395f47",
+          "sha256": "0994f01e0fc23f6a74e5d0adbd134f5f70fcfd3ec780868de369364208679eed",
+          "sha1": "c0dc3cfe04b88e65ee2dfb261a94ce2fbce70c65",
+          "md5": "678d6ccf492b712608c766ca5266627f"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.slf4j",
+          "module": "slf4j-api",
+          "version": {
+            "requires": "1.7.30"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "resilience4j-annotations-2.3.0.jar",
+          "url": "resilience4j-annotations-2.3.0.jar",
+          "size": 11357,
+          "sha512": "8e3af3650228fa690f71eaeb5996b64d2b3db094b03a7f9602cc6859398a23a495b5df14cae31c7da18f0b63d687f72fdd5665aec06489d0353d231f52395f47",
+          "sha256": "0994f01e0fc23f6a74e5d0adbd134f5f70fcfd3ec780868de369364208679eed",
+          "sha1": "c0dc3cfe04b88e65ee2dfb261a94ce2fbce70c65",
+          "md5": "678d6ccf492b712608c766ca5266627f"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "alochat"
+  },
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "CollectionName",
+    "ParameterValue": "alochat-dev-rag"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-0b5c6bbfd8d1bb545"
+  },
+  {
+    "ParameterKey": "PrivateSubnetIds",
+    "ParameterValue": "subnet-08f40467f493a7b53,subnet-0166467e5b6f3383c"
+  },
+  {
+    "ParameterKey": "VpcEndpointSecurityGroupId",
+    "ParameterValue": "sg-0997167fdc3d19d0e"
+  },
+  {
+    "ParameterKey": "AiAccessPrincipalArn",
+    "ParameterValue": "REPLACE_WITH_AI_TASK_ROLE_ARN"
+  },
+  {
+    "ParameterKey": "KnowledgeIndexName",
+    "ParameterValue": "kb_corpus"
+  },
+  {
+    "ParameterKey": "MemoryIndexName",
+    "ParameterValue": "chat_memory"
+  }
+]

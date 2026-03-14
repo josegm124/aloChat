@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: processor
+  threads:
+    virtual:
+      enabled: true
+  kafka:
+    bootstrap-servers: localhost:19092
+    properties:
+      security.protocol: ${ALOCHAT_KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      sasl.mechanism: ${ALOCHAT_KAFKA_SASL_MECHANISM:}
+      sasl.jaas.config: ${ALOCHAT_KAFKA_SASL_JAAS_CONFIG:}
+      sasl.client.callback.handler.class: ${ALOCHAT_KAFKA_SASL_CALLBACK_HANDLER:}
+    consumer:
+      group-id: alochat-processor-v1
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.alochat.contracts.message
+        spring.json.value.default.type: com.alochat.contracts.message.MessageEnvelope
+    producer:
+      acks: all
+      retries: 5
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        delivery.timeout.ms: 30000
+        spring.json.add.type.headers: false
+    listener:
+      ack-mode: record
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      ssl:
+        enabled: ${ALOCHAT_REDIS_SSL_ENABLED:true}
+
+server:
+  port: 8081
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+alochat:
+  aws:
+    region: us-east-1
+  topics:
+    normalized: messages.ingress.normalized
+    ai: messages.processing.ai
+    outbound: messages.outbound.dispatch
+    retry-short: messages.retry.short
+    retry-long: messages.retry.long
+    dlq: messages.dlq
+  dynamodb:
+    idempotency-table: alochat-dev-idempotency
+    message-audit-table: alochat-dev-message-audit
+  redis:
+    conversation-ttl: 30m
+  kafka:
+    retry-groups:
+      short: alochat-processor-retry-short-v1
+      long: alochat-processor-retry-long-v1
+    retry-delay:
+      short-ms: 2000
+      long-ms: 10000

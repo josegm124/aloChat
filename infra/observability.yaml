@@ -1,0 +1,193 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: aloChat observability stack - log groups, alerts topic and dashboard base
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: alochat
+  EnvironmentName:
+    Type: String
+    Default: dev
+  LogRetentionDays:
+    Type: Number
+    Default: 14
+  AlertEmail:
+    Type: String
+    Default: alerts@example.com
+  ErrorThreshold:
+    Type: Number
+    Default: 5
+
+Resources:
+  AlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: !Sub ${ProjectName}-${EnvironmentName}-alerts
+      TopicName: !Sub ${ProjectName}-${EnvironmentName}-alerts
+
+  AlertsSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !Ref AlertEmail
+      Protocol: email
+      TopicArn: !Ref AlertsTopic
+
+  InboundAdapterLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/alochat/${EnvironmentName}/inbound-adapter
+      RetentionInDays: !Ref LogRetentionDays
+
+  ProcessorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/alochat/${EnvironmentName}/processor
+      RetentionInDays: !Ref LogRetentionDays
+
+  AiOrchestratorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/alochat/${EnvironmentName}/ai-orchestrator
+      RetentionInDays: !Ref LogRetentionDays
+
+  OutboundDispatcherLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/alochat/${EnvironmentName}/outbound-dispatcher
+      RetentionInDays: !Ref LogRetentionDays
+
+  InboundErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '"ERROR"'
+      LogGroupName: !Ref InboundAdapterLogGroup
+      MetricTransformations:
+        - MetricNamespace: !Sub ${ProjectName}/${EnvironmentName}
+          MetricName: inbound-errors
+          MetricValue: '1'
+
+  ProcessorErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '"ERROR"'
+      LogGroupName: !Ref ProcessorLogGroup
+      MetricTransformations:
+        - MetricNamespace: !Sub ${ProjectName}/${EnvironmentName}
+          MetricName: processor-errors
+          MetricValue: '1'
+
+  AiErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '"ERROR"'
+      LogGroupName: !Ref AiOrchestratorLogGroup
+      MetricTransformations:
+        - MetricNamespace: !Sub ${ProjectName}/${EnvironmentName}
+          MetricName: ai-errors
+          MetricValue: '1'
+
+  OutboundErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '"ERROR"'
+      LogGroupName: !Ref OutboundDispatcherLogGroup
+      MetricTransformations:
+        - MetricNamespace: !Sub ${ProjectName}/${EnvironmentName}
+          MetricName: outbound-errors
+          MetricValue: '1'
+
+  InboundErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Inbound adapter error count
+      AlarmName: !Sub ${ProjectName}-${EnvironmentName}-inbound-errors
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: inbound-errors
+      Namespace: !Sub ${ProjectName}/${EnvironmentName}
+      Period: 300
+      Statistic: Sum
+      Threshold: !Ref ErrorThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertsTopic
+
+  ProcessorErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Processor error count
+      AlarmName: !Sub ${ProjectName}-${EnvironmentName}-processor-errors
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: processor-errors
+      Namespace: !Sub ${ProjectName}/${EnvironmentName}
+      Period: 300
+      Statistic: Sum
+      Threshold: !Ref ErrorThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertsTopic
+
+  AiErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: AI orchestrator error count
+      AlarmName: !Sub ${ProjectName}-${EnvironmentName}-ai-errors
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: ai-errors
+      Namespace: !Sub ${ProjectName}/${EnvironmentName}
+      Period: 300
+      Statistic: Sum
+      Threshold: !Ref ErrorThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertsTopic
+
+  OutboundErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Outbound dispatcher error count
+      AlarmName: !Sub ${ProjectName}-${EnvironmentName}-outbound-errors
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: outbound-errors
+      Namespace: !Sub ${ProjectName}/${EnvironmentName}
+      Period: 300
+      Statistic: Sum
+      Threshold: !Ref ErrorThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlertsTopic
+
+  OpsDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub ${ProjectName}-${EnvironmentName}-ops
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "text",
+              "x": 0,
+              "y": 0,
+              "width": 24,
+              "height": 4,
+              "properties": {
+                "markdown": "# aloChat ${EnvironmentName}\nDashboard base para logs, Kafka lag, Redis y Bedrock cuando el runtime este desplegado."
+              }
+            }
+          ]
+        }
+
+Outputs:
+  AlertsTopicArn:
+    Value: !Ref AlertsTopic
+    Export:
+      Name: !Sub ${AWS::StackName}-AlertsTopicArn
+  InboundAdapterLogGroupName:
+    Value: !Ref InboundAdapterLogGroup
+  ProcessorLogGroupName:
+    Value: !Ref ProcessorLogGroup
+  DashboardName:
+    Value: !Ref OpsDashboard

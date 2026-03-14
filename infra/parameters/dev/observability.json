@@ -1,0 +1,18 @@
+[
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "alochat"
+  },
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "LogRetentionDays",
+    "ParameterValue": "14"
+  },
+  {
+    "ParameterKey": "AlertEmail",
+    "ParameterValue": "alerts@example.com"
+  }
+]

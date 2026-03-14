@@ -1,0 +1,85 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.github.resilience4j",
+    "module": "resilience4j-ratelimiter",
+    "version": "2.3.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.4.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "io.github.resilience4j",
+          "module": "resilience4j-core",
+          "version": {
+            "requires": "2.3.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "resilience4j-ratelimiter-2.3.0.jar",
+          "url": "resilience4j-ratelimiter-2.3.0.jar",
+          "size": 43394,
+          "sha512": "0f4afe859a4668fd2a6f693abf592b0abdba289d18e763b6379e7e27ad40ac889cb2f45d288dbed7987bbabe815e94683734dc045ebeb20247982d2809131ef7",
+          "sha256": "938381e4e2fe570dd920391df769f8aaca06b1fa769657eb1b0672fe68f350e1",
+          "sha1": "6c303d40dd6320c009e780b427942871107d8c26",
+          "md5": "0ad3005ef14c58c1774d89a146d3a37d"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.slf4j",
+          "module": "slf4j-api",
+          "version": {
+            "requires": "1.7.30"
+          }
+        },
+        {
+          "group": "io.github.resilience4j",
+          "module": "resilience4j-core",
+          "version": {
+            "requires": "2.3.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "resilience4j-ratelimiter-2.3.0.jar",
+          "url": "resilience4j-ratelimiter-2.3.0.jar",
+          "size": 43394,
+          "sha512": "0f4afe859a4668fd2a6f693abf592b0abdba289d18e763b6379e7e27ad40ac889cb2f45d288dbed7987bbabe815e94683734dc045ebeb20247982d2809131ef7",
+          "sha256": "938381e4e2fe570dd920391df769f8aaca06b1fa769657eb1b0672fe68f350e1",
+          "sha1": "6c303d40dd6320c009e780b427942871107d8c26",
+          "md5": "0ad3005ef14c58c1774d89a146d3a37d"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "WHATSAPP_BUSINESS_ACCOUNT_ID",
+      "changes": [
+        {
+          "field": "messages",
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "15551234567",
+              "phone_number_id": "1234567890"
+            },
+            "contacts": [
+              {
+                "profile": {
+                  "name": "Jose Guerrero"
+                },
+                "wa_id": "5215512345678"
+              }
+            ],
+            "messages": [
+              {
+                "from": "5215512345678",
+                "id": "wamid.HBgLNTE1NTUxMjM0NTY3OBUCABIYFjZFQkRBRDI2RkY2ODcyN0Y0NAA=",
+                "timestamp": "1741642800",
+                "text": {
+                  "body": "Hola, quiero informacion del producto premium"
+                },
+                "type": "text"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

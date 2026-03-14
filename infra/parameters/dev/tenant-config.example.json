@@ -1,0 +1,18 @@
+[
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "alochat"
+  },
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "TenantId",
+    "ParameterValue": "acme"
+  },
+  {
+    "ParameterKey": "WebIngressHmacKey",
+    "ParameterValue": "REEMPLAZAR_CON_HMAC_REAL"
+  }
+]

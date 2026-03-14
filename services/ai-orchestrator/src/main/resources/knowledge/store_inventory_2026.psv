@@ -1,0 +1,51 @@
+item_id|product_name|category|price_mxn|unit|usage
+1|Vinimex Total (Comex)|Vinil-Acrilica Premium|3450|cubeta|Pintar interiores de casas de lujo y oficinas de alto trafico.
+2|Berelinte (Berel)|Vinil-Acrilica Estandar|2780|cubeta|Muros interiores y fachadas residenciales estandar.
+3|Behr Premium Plus|Acrilica Exterior|3900|cubeta|Fachadas de casas en climas humedos o muy soleados.
+4|Sherwin Williams Loxon|Sellador Pintura Concreto|4100|cubeta|Pintar muros de concreto nuevos o superficies con salitre.
+5|Sayer Lack Esmalte|Alquidalico|1850|cubeta|Proteccion de herreria, puertas de metal y barandales.
+6|Jotun SeaQuantum|Antifouling Marino|12400|cubeta|Pintar el casco de barcos y yates para evitar algas.
+7|PPG Desothane|Poliuretano Aeroespacial|32800|cubeta|Pintar el fuselaje de aviones; resistente a cambios de presion y UV.
+8|Rust-Oleum High Heat|Esmalte Termico|950|galon|Pintar asadores, calderas o motores que generan mucho calor.
+9|Comex Epoxacryl|Epoxico base agua|4800|cubeta|Pisos de hospitales y laboratorios por su higiene y resistencia.
+10|AkzoNobel Interpon|Pintura en Polvo|5600|20kg|Acabados industriales en electrodomesticos y piezas automotrices.
+11|Behr DeckPlus|Tinta para madera|2100|cubeta|Proteccion y color para terrazas de madera exteriores.
+12|Stucco Veneciano (Sayer)|Decorativo|3200|cubeta|Acabados de lujo tipo marmol en muros de acento.
+13|Impermeabilizante 10 anos|Acrilico elastomerico|2950|cubeta|Evitar filtraciones en azoteas de edificios y casas.
+14|Pintura para Trafico (PBI)|Base Solvente|2400|cubeta|Senalamiento vial en asfalto, parkings y carreteras.
+15|Krylon Colormaster|Aerosol Multiusos|210|pieza|Pequenas reparaciones en muebles o manualidades.
+16|Sika Cor Coat|Anticorrosivo Industrial|15200|cubeta|Pintar puentes de acero y estructuras en zonas costeras.
+17|MasterCoat Alberca|Cloro-Caucho|4300|cubeta|Recubrimiento para albercas de concreto y cisternas.
+18|Benjamin Moore Aura|Premium Interior|4150|cubeta|Pintar habitaciones con colores intensos que no pierden tono.
+19|Pintura Pizarron (Comex)|Especialidad|850|litro|Convertir cualquier pared en un pizarron de tiza.
+20|Recubrimiento Intumescente|Proteccion Fuego|18400|cubeta|Pintar vigas de acero para retrasar colapsos en incendios.
+21|Zinc Primario (PPG)|Proteccion Galvanica|7800|cubeta|Capa base para estructuras de acero en plataformas petroleras.
+22|Pintura Fluorescente|Seguridad|1200|cubeta|Pintar salidas de emergencia y zonas de bajo relieve.
+23|Barniz Marino (Sayrlack)|Madera Exterior|2450|cubeta|Proteccion para puertas de madera expuestas al sol y lluvia.
+24|Esmalte Sanitario|Grado Alimenticio|5900|cubeta|Pintar muros interiores en fabricas de alimentos.
+25|Pintura para Canchas|Acrilico Deportivo|3100|cubeta|Pintar canchas de tenis, basquetbol y multiusos.
+26|Antigraffiti (Comex)|Poliuretano|4500|cubeta|Proteccion de muros urbanos para limpieza facil de graffiti.
+27|Sellador 5x1 (Berel)|Preparacion|1100|cubeta|Preparar paredes porosas antes de aplicar la pintura final.
+28|Esmalte Automotriz 2K|Poliuretano Auto|6800|cubeta|Pintar carrocerias de autos chocados o restauraciones.
+29|Laca Automotriz|Nitrocelulosa|2100|cubeta|Pintar piezas pequenas de autos o muebles vintage.
+30|Pintura Electrostatica|Industrial Polvo|8200|cubeta|Recubrimiento de rines de aluminio y cuadros de bici.
+31|Hydro-Pliolite (Pliolux)|Fachadas Extremas|5400|cubeta|Pintar exteriores en climas de frio extremo o alta salinidad.
+32|Barniz Ignifugo|Madera Seguridad|3800|cubeta|Pintar techos de madera en teatros y lugares publicos.
+33|Pintura Antimicrobiana|Salud|4600|cubeta|Pintar quirofanos; elimina bacterias al contacto.
+34|Membrana Liquida|Poliuretano Techo|7200|cubeta|Impermeabilizacion de alta gama en techos verdes.
+35|Bituminosa (Proteccion)|Asfaltica|1450|cubeta|Proteccion de cimientos enterrados contra la humedad.
+36|Esmalte para Azulejos|Epoxico Modificado|1800|cubeta|Renovar banos y cocinas sin quitar la ceramica.
+37|Laca para Metales|Proteccion Brillo|980|cubeta|Evitar el oscurecimiento de piezas de cobre o laton.
+38|Pintura Magnetica|Especialidad|1300|litro|Paredes donde se pueden pegar imanes en oficinas.
+39|Texturizado Acrilico|Decorativo Pasta|1250|cubeta|Acabados con relieve en fachadas de edificios.
+40|Pintura para Teja|Acrilica Color|2350|cubeta|Renovacion estetica y proteccion de tejas de barro.
+41|Efecto Cemento Pulido|Arquitectonica|3600|cubeta|Interiores modernos con apariencia de concreto industrial.
+42|Pintura Termorreflectante|Ahorro Energia|4900|cubeta|Pintar techos para reducir calor interior hasta 5C.
+43|Barniz de Pasto (Tinte)|Paisajismo|1600|cubeta|Pintar cesped seco en campos de golf para que se vea verde.
+44|Pintura Camuflaje|Militar Caza|3200|cubeta|Pintar vehiculos tacticos o equipo de campismo.
+45|Silicona Alta Temp|Industrial|11200|cubeta|Pintar chimeneas industriales y escapes de turbinas.
+46|Pintura Conductiva|Electronica|8500|litro|Blindaje EMI RFI en cuartos de servidores.
+47|Tinte de Concreto|Acido Estampado|2800|cubeta|Dar color permanente a pisos de concreto estampado.
+48|Esmalte para Radiadores|Resistente Calor|1150|cubeta|Pintar calefactores domesticos sin que amarilleen.
+49|Pintura de Caucho|Removible|1400|cubeta|Pintar rines de auto con capa que se puede quitar.
+50|Poliuretano para Pisos|Alto Brillo|5800|cubeta|Acabado espejo en pisos de madera de salones de baile.

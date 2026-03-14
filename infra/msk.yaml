@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: aloChat messaging stack - Amazon MSK Serverless for Kafka transport
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: alochat
+  EnvironmentName:
+    Type: String
+    Default: dev
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  PrivateSubnetIds:
+    Type: CommaDelimitedList
+  KafkaClientSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+  MskServerlessCluster:
+    Type: AWS::MSK::ServerlessCluster
+    Properties:
+      ClusterName: !Sub ${ProjectName}-${EnvironmentName}-msk
+      ClientAuthentication:
+        Sasl:
+          Iam:
+            Enabled: true
+      VpcConfigs:
+        - SecurityGroups:
+            - !Ref KafkaClientSecurityGroupId
+          SubnetIds: !Ref PrivateSubnetIds
+
+Outputs:
+  KafkaClusterArn:
+    Value: !Ref MskServerlessCluster
+    Export:
+      Name: !Sub ${AWS::StackName}-KafkaClusterArn
