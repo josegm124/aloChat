@@ -36,26 +36,30 @@ En Telegram, `conversationId` ya es `chat.id`, asi que el resumen queda amarrado
 
 ## Implementacion actual
 Hoy el `ai-orchestrator` ya hace esto:
-- consulta un corpus local estructurado de inventario
-- genera respuestas basadas en coincidencias del catalogo
-- guarda memoria resumida en DynamoDB
+- consulta `kb_corpus` en OpenSearch Serverless
+- consulta y actualiza `chat_memory`
+- aplica reranking heuristico por tipo de superficie o uso
+- genera respuestas conservadoras basadas solo en inventario/corpus
+- guarda memoria resumida en DynamoDB/OpenSearch segun el adaptador activo
 - guarda hints de campaña en DynamoDB
+- ejecuta un scheduler interno para materializar campañas:
+  - seguimiento por tiempo
+  - vigilancia de cambio de precio
 
-Esto permite avanzar el MVP sin esperar OpenSearch ni Bedrock.
+Esto ya cubre el MVP funcional sin depender todavia de Bedrock para generacion final.
 
 ## Implementacion objetivo
 La siguiente evolucion del `ai-orchestrator` es:
 
-1. cargar el corpus a S3
-2. indexarlo en OpenSearch Serverless
-3. usar embeddings `amazon.titan-embed-text-v2:0`
-4. consultar dos indices separados:
+1. usar embeddings `amazon.titan-embed-text-v2:0`
+2. retrieval mas rico sobre:
 - `kb_corpus`
 - `chat_memory`
-5. construir el prompt final con:
+3. construir el prompt final con:
 - mensaje actual
 - memoria resumida
 - snippets del corpus
+4. usar Bedrock para redaccion final cuando agregue valor sin salir del inventario/corpus
 
 ## Politica de memoria
 No se embebe cada mensaje crudo.
@@ -83,13 +87,13 @@ El archivo externo de origen fue:
 ## Roadmap tecnico
 Completado:
 - `ai-orchestrator` entre `processor` y `outbound-dispatcher`
-- stub reemplazado por respuesta basada en catalogo
+- respuestas basadas en inventario real
 - memoria conversacional durable
 - hints de campaña durable
+- OpenSearch Serverless real para conocimiento y memoria
+- scheduler MVP de campañas
 
 Sigue:
-1. OpenSearch Serverless real
-2. carga del corpus a S3/OpenSearch
-3. Bedrock embeddings Titan V2
-4. retrieval hibrido
-5. generacion final con Bedrock
+1. Bedrock embeddings Titan V2
+2. retrieval hibrido
+3. generacion final con Bedrock

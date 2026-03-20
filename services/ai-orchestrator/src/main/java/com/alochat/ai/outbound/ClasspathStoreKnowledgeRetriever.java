@@ -2,6 +2,7 @@ package com.alochat.ai.outbound;
 
 import com.alochat.ai.model.KnowledgeSnippet;
 import com.alochat.ai.model.StoreCatalogItem;
+import com.alochat.ai.port.CatalogSnapshotRepository;
 import com.alochat.ai.port.KnowledgeRetriever;
 import com.alochat.contracts.message.MessageEnvelope;
 import java.io.BufferedReader;
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @ConditionalOnMissingBean(KnowledgeRetriever.class)
-public class ClasspathStoreKnowledgeRetriever implements KnowledgeRetriever {
+public class ClasspathStoreKnowledgeRetriever implements KnowledgeRetriever, CatalogSnapshotRepository {
 
     private final String catalogResource;
     private final AtomicReference<List<StoreCatalogItem>> catalogCache = new AtomicReference<>();
@@ -43,6 +44,22 @@ public class ClasspathStoreKnowledgeRetriever implements KnowledgeRetriever {
                 .sorted(Comparator.comparingDouble(KnowledgeSnippet::score).reversed())
                 .limit(limit)
                 .toList();
+    }
+
+    @Override
+    public Map<String, StoreCatalogItem> findByProductNames(String tenantId, List<String> productNames) {
+        List<String> normalizedProducts = productNames.stream()
+                .map(this::normalize)
+                .filter(value -> !value.isBlank())
+                .toList();
+        Map<String, StoreCatalogItem> found = new LinkedHashMap<>();
+        for (StoreCatalogItem item : loadCatalog()) {
+            String normalizedProductName = normalize(item.productName());
+            if (normalizedProducts.contains(normalizedProductName)) {
+                found.put(item.productName(), item);
+            }
+        }
+        return Map.copyOf(found);
     }
 
     private KnowledgeSnippet toSnippet(StoreCatalogItem item, String question, List<String> tokens) {

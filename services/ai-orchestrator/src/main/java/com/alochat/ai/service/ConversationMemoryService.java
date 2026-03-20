@@ -6,9 +6,11 @@ import com.alochat.ai.model.KnowledgeSnippet;
 import com.alochat.contracts.message.MessageEnvelope;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -64,10 +66,15 @@ public class ConversationMemoryService {
         );
     }
 
-    public CampaignHint createHint(MessageEnvelope inboundEnvelope, ConversationMemory conversationMemory) {
+    public CampaignHint createHint(
+            MessageEnvelope inboundEnvelope,
+            ConversationMemory conversationMemory,
+            List<KnowledgeSnippet> knowledgeSnippets
+    ) {
         if (conversationMemory == null) {
             return null;
         }
+        Map<String, String> productPrices = extractProductPrices(knowledgeSnippets);
         if (conversationMemory.followUpAt() != null) {
             return new CampaignHint(
                     inboundEnvelope.messageId() + "#repaint-followup",
@@ -79,8 +86,10 @@ public class ConversationMemoryService {
                     "REPLENISHMENT_FOLLOW_UP",
                     safeValue(conversationMemory.followUpReason(), "Seguimiento de proyecto de pintura"),
                     conversationMemory.trackedProducts(),
+                    productPrices,
                     inboundEnvelope.receivedAt(),
-                    conversationMemory.followUpAt()
+                    conversationMemory.followUpAt(),
+                    null
             );
         }
         if (!conversationMemory.trackedProducts().isEmpty()) {
@@ -94,8 +103,10 @@ public class ConversationMemoryService {
                     "DISCOUNT_WATCH",
                     "Avisar si alguno de los productos de interes entra en promocion",
                     conversationMemory.trackedProducts(),
+                    productPrices,
                     inboundEnvelope.receivedAt(),
-                    inboundEnvelope.receivedAt()
+                    inboundEnvelope.receivedAt(),
+                    null
             );
         }
         return null;
@@ -108,6 +119,21 @@ public class ConversationMemoryService {
                 .distinct()
                 .limit(4)
                 .toList();
+    }
+
+    private Map<String, String> extractProductPrices(List<KnowledgeSnippet> knowledgeSnippets) {
+        Map<String, String> prices = new LinkedHashMap<>();
+        for (KnowledgeSnippet snippet : knowledgeSnippets) {
+            String productName = snippet.metadata().getOrDefault("productName", "");
+            String price = snippet.metadata().getOrDefault("priceMxn", "");
+            if (!productName.isBlank() && !price.isBlank()) {
+                prices.putIfAbsent(productName, price);
+            }
+            if (prices.size() == 4) {
+                break;
+            }
+        }
+        return Map.copyOf(prices);
     }
 
     private List<String> extractInterestTags(String question, List<KnowledgeSnippet> knowledgeSnippets) {

@@ -141,11 +141,17 @@ public class OpenSearchKnowledgeRetriever implements KnowledgeRetriever {
                 double score = hit.path("_score").asDouble(0.0);
 
                 Map<String, String> metadata = new LinkedHashMap<>();
+                if (!productName.isBlank()) {
+                    metadata.put("productName", productName);
+                }
                 if (!category.isBlank()) {
                     metadata.put("category", category);
                 }
                 if (!price.isBlank()) {
                     metadata.put("priceMxn", price);
+                }
+                if (!usage.isBlank()) {
+                    metadata.put("usage", usage);
                 }
                 if (!tenantId.isBlank()) {
                     metadata.put("tenantId", tenantId);

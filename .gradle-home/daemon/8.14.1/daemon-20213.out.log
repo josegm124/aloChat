@@ -1,0 +1,1617 @@
+2026-03-19T17:14:13.341-0600 [DEBUG] [org.gradle.launcher.daemon.bootstrap.DaemonMain] Assuming the daemon was started with following jvm opts: [-Xmx1g, -Dfile.encoding=UTF-8, -Duser.country, -Duser.language=en, -Duser.variant]
+2026-03-19T17:14:13.528-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Adding IP addresses for network interface docker0
+2026-03-19T17:14:13.528-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Is this a loopback interface? false
+2026-03-19T17:14:13.528-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Adding remote address /172.17.0.1
+2026-03-19T17:14:13.529-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Adding IP addresses for network interface wlp0s20f3
+2026-03-19T17:14:13.529-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Is this a loopback interface? false
+2026-03-19T17:14:13.529-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Adding remote address /fe80:0:0:0:2d4:d3ec:1b5d:f22f%wlp0s20f3
+2026-03-19T17:14:13.530-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Adding remote address /2806:265:3486:888:cbaa:ee28:c97b:5d09%wlp0s20f3
+2026-03-19T17:14:13.530-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Adding remote address /2806:265:3486:888:6cbd:3117:3543:1cef%wlp0s20f3
+2026-03-19T17:14:13.530-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Adding remote address /192.168.1.6
+2026-03-19T17:14:13.530-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Adding IP addresses for network interface lo
+2026-03-19T17:14:13.531-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Is this a loopback interface? true
+2026-03-19T17:14:13.531-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Adding loopback address /0:0:0:0:0:0:0:1%lo
+2026-03-19T17:14:13.531-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.InetAddresses] Adding loopback address /127.0.0.1
+2026-03-19T17:14:13.566-0600 [INFO] [org.gradle.launcher.daemon.server.Daemon] start() called on daemon - DefaultDaemonContext[uid=1b60b021-92a6-4a6f-8d0e-f21bf9122dd8,javaHome=/usr/lib/jvm/java-21-openjdk-amd64,javaVersion=21,javaVendor=Ubuntu,daemonRegistryDir=/home/jose-guerrero/Desktop/aloChat/.gradle-home/daemon,pid=20213,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1g,-Dfile.encoding=UTF-8,-Duser.country,-Duser.language=en,-Duser.variant]
+2026-03-19T17:14:13.599-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.TcpIncomingConnector] Listening on [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]].
+2026-03-19T17:14:13.605-0600 [DEBUG] [org.gradle.launcher.daemon.server.Daemon] Daemon starting at: Thu Mar 19 17:14:13 CST 2026, with address: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]]
+2026-03-19T17:14:13.606-0600 [INFO] [org.gradle.launcher.daemon.server.DaemonRegistryUpdater] Advertising the daemon address to the clients: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]]
+2026-03-19T17:14:13.606-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonRegistryUpdater] Advertised daemon context: DefaultDaemonContext[uid=1b60b021-92a6-4a6f-8d0e-f21bf9122dd8,javaHome=/usr/lib/jvm/java-21-openjdk-amd64,javaVersion=21,javaVendor=Ubuntu,daemonRegistryDir=/home/jose-guerrero/Desktop/aloChat/.gradle-home/daemon,pid=20213,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1g,-Dfile.encoding=UTF-8,-Duser.country,-Duser.language=en,-Duser.variant]
+2026-03-19T17:14:13.607-0600 [DEBUG] [org.gradle.launcher.daemon.registry.PersistentDaemonRegistry] Storing daemon address: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]], context: DefaultDaemonContext[uid=1b60b021-92a6-4a6f-8d0e-f21bf9122dd8,javaHome=/usr/lib/jvm/java-21-openjdk-amd64,javaVersion=21,javaVendor=Ubuntu,daemonRegistryDir=/home/jose-guerrero/Desktop/aloChat/.gradle-home/daemon,pid=20213,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1g,-Dfile.encoding=UTF-8,-Duser.country,-Duser.language=en,-Duser.variant]
+2026-03-19T17:14:13.614-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire exclusive lock on daemon addresses registry.
+2026-03-19T17:14:13.618-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:14:13.622-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:14:13.648-0600 [LIFECYCLE] [org.gradle.launcher.daemon.server.Daemon] Daemon server started.
+2026-03-19T17:14:13.650-0600 [DEBUG] [org.gradle.launcher.daemon.bootstrap.DaemonStartupCommunication] Completed writing the daemon greeting. Closing streams...
+2026-03-19T17:14:13.660-0600 [DEBUG] [org.gradle.launcher.daemon.server.Daemon] stopOnExpiration() called on daemon
+2026-03-19T17:14:13.661-0600 [DEBUG] [org.gradle.launcher.daemon.server.Daemon] awaitExpiration() called on daemon
+2026-03-19T17:14:13.662-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] daemon is running. Sleeping until state changes.
+2026-03-19T17:14:13.686-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.TcpIncomingConnector] Accepted connection from /127.0.0.1:50776 to /127.0.0.1:40961.
+2026-03-19T17:14:13.732-0600 [DEBUG] [org.gradle.launcher.daemon.server.SynchronizedDispatchConnection] thread 32: received class org.gradle.launcher.daemon.protocol.Build
+2026-03-19T17:14:13.732-0600 [DEBUG] [org.gradle.launcher.daemon.server.DefaultDaemonConnection] thread 32: Received non-IO message from client: Build{id=fc5d2758-786c-42c4-a0f1-454492d4292c, currentDir=/home/jose-guerrero/Desktop/aloChat}
+2026-03-19T17:14:13.732-0600 [INFO] [org.gradle.launcher.daemon.server.DefaultIncomingConnectionHandler] Received command: Build{id=fc5d2758-786c-42c4-a0f1-454492d4292c, currentDir=/home/jose-guerrero/Desktop/aloChat}.
+2026-03-19T17:14:13.733-0600 [DEBUG] [org.gradle.launcher.daemon.server.DefaultIncomingConnectionHandler] Starting executing command: Build{id=fc5d2758-786c-42c4-a0f1-454492d4292c, currentDir=/home/jose-guerrero/Desktop/aloChat} with connection: socket connection from /127.0.0.1:40961 to /127.0.0.1:50776.
+2026-03-19T17:14:13.737-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] Command execution: started DaemonCommandExecution[command = Build{id=fc5d2758-786c-42c4-a0f1-454492d4292c, currentDir=/home/jose-guerrero/Desktop/aloChat}, connection = DefaultDaemonConnection: socket connection from /127.0.0.1:40961 to /127.0.0.1:50776] after 0.00245 minutes of idle
+2026-03-19T17:14:13.737-0600 [INFO] [org.gradle.launcher.daemon.server.DaemonRegistryUpdater] Marking the daemon as busy, address: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]]
+2026-03-19T17:14:13.738-0600 [DEBUG] [org.gradle.launcher.daemon.registry.PersistentDaemonRegistry] Marking busy by address: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]]
+2026-03-19T17:14:13.738-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire exclusive lock on daemon addresses registry.
+2026-03-19T17:14:13.741-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] The file lock for daemon addresses registry is held by a different Gradle process (pid: 20212, lockId: -8929587353014926188). Pinged owner at port 57741
+2026-03-19T17:14:13.792-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:14:13.793-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:14:13.793-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] resetting idle timer
+2026-03-19T17:14:13.793-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] daemon is running. Sleeping until state changes.
+2026-03-19T17:14:13.794-0600 [INFO] [org.gradle.launcher.daemon.server.exec.StartBuildOrRespondWithBusy] Daemon is about to start building Build{id=fc5d2758-786c-42c4-a0f1-454492d4292c, currentDir=/home/jose-guerrero/Desktop/aloChat}. Dispatching build started information...
+2026-03-19T17:14:13.795-0600 [DEBUG] [org.gradle.launcher.daemon.server.SynchronizedDispatchConnection] thread 34: dispatching org.gradle.launcher.daemon.protocol.BuildStarted@72f4b88f
+2026-03-19T17:14:13.796-0600 [DEBUG] [org.gradle.launcher.daemon.server.exec.EstablishBuildEnvironment] Configuring env variables: [PATH, XAUTHORITY, INVOCATION_ID, XMODIFIERS, XDG_DATA_DIRS, GDMSESSION, GIT_PAGER, TERMINATOR_DBUS_PATH, DBUS_SESSION_BUS_ADDRESS, XDG_CURRENT_DESKTOP, JOURNAL_STREAM, GH_PAGER, GSM_SKIP_SSH_AGENT_WORKAROUND, COLORTERM, USERNAME, SESSION_MANAGER, LOGNAME, MANAGERPID, PWD, IM_CONFIG_PHASE, CODEX_MANAGED_BY_NPM, NVM_CD_FLAGS, SHELL, LESSOPEN, CODEX_SANDBOX_NETWORK_DISABLED, PAGER, OLDPWD, GNOME_DESKTOP_SESSION_ID, GTK_MODULES, LC_ALL, DEBUGINFOD_URLS, LC_CTYPE, SYSTEMD_EXEC_PID, LS_COLORS, XDG_SESSION_DESKTOP, GNOME_SETUP_DISPLAY, SHLVL, MEMORY_PRESSURE_WRITE, LESSCLOSE, QT_IM_MODULE, MEMORY_PRESSURE_WATCH, TERM, XDG_CONFIG_DIRS, LANG, GNOME_KEYRING_CONTROL, XDG_SESSION_TYPE, DISPLAY, NVM_INC, GRADLE_USER_HOME, WAYLAND_DISPLAY, CODEX_THREAD_ID, NO_COLOR, XDG_SESSION_CLASS, _, CODEX_CI, NVM_DIR, TERMINATOR_DBUS_NAME, DESKTOP_SESSION, USER, XDG_MENU_PREFIX, GIO_LAUNCHED_DESKTOP_FILE_PID, QT_ACCESSIBILITY, VTE_VERSION, TERMINATOR_UUID, SSH_AUTH_SOCK, GNOME_SHELL_SESSION_MODE, IM_CONFIG_CHECK_ENV, XDG_RUNTIME_DIR, NVM_BIN, HOME]
+2026-03-19T17:14:13.802-0600 [DEBUG] [org.gradle.launcher.daemon.server.exec.LogToClient] About to start relaying all logs to the client via the connection.
+2026-03-19T17:14:13.803-0600 [INFO] [org.gradle.launcher.daemon.server.exec.LogToClient] The client will now receive all logging from the daemon (pid: 20213). The daemon log file: /home/jose-guerrero/Desktop/aloChat/.gradle-home/daemon/8.14.1/daemon-20213.out.log
+2026-03-19T17:14:13.805-0600 [INFO] [org.gradle.launcher.daemon.server.exec.LogAndCheckHealth] Starting build in new daemon [memory: 1 GiB]
+2026-03-19T17:14:13.808-0600 [DEBUG] [org.gradle.launcher.daemon.server.exec.ExecuteBuild] The daemon has started executing the build.
+2026-03-19T17:14:13.808-0600 [DEBUG] [org.gradle.launcher.daemon.server.exec.ExecuteBuild] Executing build with daemon context: DefaultDaemonContext[uid=1b60b021-92a6-4a6f-8d0e-f21bf9122dd8,javaHome=/usr/lib/jvm/java-21-openjdk-amd64,javaVersion=21,javaVendor=Ubuntu,daemonRegistryDir=/home/jose-guerrero/Desktop/aloChat/.gradle-home/daemon,pid=20213,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx1g,-Dfile.encoding=UTF-8,-Duser.country,-Duser.language=en,-Duser.variant]
+
+Containerizing application to [36m668778694151.dkr.ecr.us-east-1.amazonaws.com/alochat/dev/processor[0m...
+Base image 'eclipse-temurin:21-jre' does not use a specific image digest - build may not be reproducible
+[1mExecuting tasks:[0m
+[1m[                              ] 0.0% complete[0m
+[1m> building images to registry[0m
+[1m[0m
+[4A[0J
+[1A[1mExecuting tasks:[0m
+[1m[                              ] 0.0% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m[0m
+[4A[0J
+[1A[1mExecuting tasks:[0m
+[1m[                              ] 0.0% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[                              ] 0.0% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> trying mirrors[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=                             ] 2.1% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=                             ] 2.1% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=                             ] 2.1% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> launching application layer builders[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=                             ] 2.1% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> building dependencies layer[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=                             ] 2.1% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> building dependencies layer[0m
+[1m> building project dependencies layer[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=                             ] 2.1% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> building dependencies layer[0m
+[1m> building project dependencies layer[0m
+[1m> building resources layer[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=                             ] 2.1% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> building dependencies layer[0m
+[1m> building project dependencies layer[0m
+[1m> building resources layer[0m
+[1m> building classes layer[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=                             ] 2.1% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> building dependencies layer[0m
+[1m> building project dependencies layer[0m
+[1m> building resources layer[0m
+[1m> building classes layer[0m
+[1m> building jvm arg files layer[0m
+[1m[0m
+[10A[0J
+[1AUsing credentials from Docker config (/home/jose-guerrero/.docker/config.json) for 668778694151.dkr.ecr.us-east-1.amazonaws.com/alochat/dev/processor
+[1mExecuting tasks:[0m
+[1m[=                             ] 2.1% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> building dependencies layer[0m
+[1m> building project dependencies layer[0m
+[1m> building resources layer[0m
+[1m> building classes layer[0m
+[1m> building jvm arg files layer[0m
+[1m[0m
+[10A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==                            ] 6.3% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> building dependencies layer[0m
+[1m> building project dependencies layer[0m
+[1m> building resources layer[0m
+[1m> building classes layer[0m
+[1m> building jvm arg files layer[0m
+[1m[0m
+[10A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==                            ] 7.9% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> building dependencies layer[0m
+[1m> building resources layer[0m
+[1m> building classes layer[0m
+[1m> building jvm arg files layer[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[===                           ] 9.6% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> building dependencies layer[0m
+[1m> building classes layer[0m
+[1m> building jvm arg files layer[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[===                           ] 11.2% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> building dependencies layer[0m
+[1m> building classes layer[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[====                          ] 12.9% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest and container config[0m
+[1m> building dependencies layer[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=====                         ] 15.0% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m[0m
+[6A[0J
+[1AThe base image requires auth. Trying again for eclipse-temurin:21-jre...
+[1mExecuting tasks:[0m
+[1m[=====                         ] 15.0% complete[0m
+[1m> authenticating push to 668778694151.dkr.ecr.u...[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======                        ] 19.2% complete[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======                        ] 19.2% complete[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======                        ] 19.2% complete[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m> pushing blob sha256:f568ef430183de06ed7e50da6...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======                        ] 19.2% complete[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m> pushing blob sha256:f568ef430183de06ed7e50da6...[0m
+[1m> pushing blob sha256:49df050ae9050b63f8d06015b...[0m
+[1m> pushing blob sha256:1d6e70497c1e610a22cc7cb28...[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======                        ] 19.2% complete[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m> pushing blob sha256:f568ef430183de06ed7e50da6...[0m
+[1m> pushing blob sha256:49df050ae9050b63f8d06015b...[0m
+[1m> pushing blob sha256:1d6e70497c1e610a22cc7cb28...[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======                        ] 19.2% complete[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m> pushing blob sha256:f568ef430183de06ed7e50da6...[0m
+[1m> pushing blob sha256:49df050ae9050b63f8d06015b...[0m
+[1m> pushing blob sha256:1d6e70497c1e610a22cc7cb28...[0m
+[1m> pushing blob sha256:14829a38d003b7841f59a854f...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======                        ] 20.8% complete[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m> pushing blob sha256:49df050ae9050b63f8d06015b...[0m
+[1m> pushing blob sha256:1d6e70497c1e610a22cc7cb28...[0m
+[1m> pushing blob sha256:14829a38d003b7841f59a854f...[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=======                       ] 22.5% complete[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m> pushing blob sha256:49df050ae9050b63f8d06015b...[0m
+[1m> pushing blob sha256:1d6e70497c1e610a22cc7cb28...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=======                       ] 24.2% complete[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m> pushing blob sha256:1d6e70497c1e610a22cc7cb28...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=======                       ] 24.2% complete[0m
+[1m> building dependencies layer[0m
+[1m> pushing blob sha256:1d6e70497c1e610a22cc7cb28...[0m
+[1m> pulling base image manifest and container config[0m
+[1m[0m
+[6A[0J
+[1AUsing base image with digest: sha256:5c67d24ee8e3dd810b2a0cb6c3827ced2ac5d22729538f90b36c2b9d77678bb8
+[1mExecuting tasks:[0m
+[1m[=======                       ] 24.2% complete[0m
+[1m> building dependencies layer[0m
+[1m> pushing blob sha256:1d6e70497c1e610a22cc7cb28...[0m
+[1m> pulling base image manifest and container config[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========                      ] 25.2% complete[0m
+[1m> building dependencies layer[0m
+[1m> pushing blob sha256:1d6e70497c1e610a22cc7cb28...[0m
+[1m> pulling base image manifest and container config[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========                      ] 25.2% complete[0m
+[1m> building dependencies layer[0m
+[1m> pushing blob sha256:1d6e70497c1e610a22cc7cb28...[0m
+[1m> pulling platform-specific manifests and conta...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========                      ] 26.9% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> pulling platform-specific manifests and conta...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========                      ] 27.4% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> pulling platform-specific manifests and conta...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========                      ] 27.4% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> pull container configuration sha256:dd76195e0...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========                      ] 27.9% complete[0m
+[1m> pulling base image manifest[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling obtaining base images layers[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching base image layer pullers[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching base image layer pullers[0m
+[1m> scheduling pushing base images layers[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching base image layer pullers[0m
+[1m> launching layer pushers[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching layer pushers[0m
+[1m> checking base image layer sha256:817807f3c64e...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching layer pushers[0m
+[1m> checking base image layer sha256:817807f3c64e...[0m
+[1m> scheduling building manifests[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching layer pushers[0m
+[1m> checking base image layer sha256:817807f3c64e...[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> checking base image layer sha256:6502333748a9...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching layer pushers[0m
+[1m> checking base image layer sha256:817807f3c64e...[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching layer pushers[0m
+[1m> checking base image layer sha256:817807f3c64e...[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> checking base image layer sha256:6502333748a9...[0m
+[1m> checking base image layer sha256:92b331859550...[0m
+[1m> checking base image layer sha256:ded334408097...[0m
+[1m> scheduling pushing manifests[0m
+[1m[0m
+[14A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching layer pushers[0m
+[1m> checking base image layer sha256:817807f3c64e...[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> checking base image layer sha256:6502333748a9...[0m
+[1m> checking base image layer sha256:92b331859550...[0m
+[1m[0m
+[12A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching layer pushers[0m
+[1m> checking base image layer sha256:817807f3c64e...[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> checking base image layer sha256:6502333748a9...[0m
+[1m> checking base image layer sha256:92b331859550...[0m
+[1m> checking base image layer sha256:ded334408097...[0m
+[1m[0m
+[13A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========                     ] 30.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching layer pushers[0m
+[1m> checking base image layer sha256:817807f3c64e...[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m[0m
+[10A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==========                    ] 33.3% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> checking base image layer sha256:6502333748a9...[0m
+[1m> checking base image layer sha256:92b331859550...[0m
+[1m> scheduling pushing manifests[0m
+[1m[0m
+[12A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==========                    ] 33.3% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> checking base image layer sha256:6502333748a9...[0m
+[1m> checking base image layer sha256:92b331859550...[0m
+[1m> scheduling pushing manifests[0m
+[1m[0m
+[12A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==========                    ] 33.3% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> checking base image layer sha256:6502333748a9...[0m
+[1m> checking base image layer sha256:92b331859550...[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:ded334408097f08dde9507428...[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m[0m
+[13A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==========                    ] 33.3% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> checking base image layer sha256:6502333748a9...[0m
+[1m> checking base image layer sha256:92b331859550...[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:ded334408097f08dde9507428...[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m[0m
+[13A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==========                    ] 35.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> checking base image layer sha256:92b331859550...[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:ded334408097f08dde9507428...[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m[0m
+[12A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==========                    ] 35.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> checking base image layer sha256:92b331859550...[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:ded334408097f08dde9507428...[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m[0m
+[13A[0J
+[1A[1mExecuting tasks:[0m
+[1m[===========                   ] 36.7% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:ded334408097f08dde9507428...[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m[0m
+[12A[0J
+[1A[1mExecuting tasks:[0m
+[1m[===========                   ] 36.7% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> checking base image layer sha256:bf6ab2a4ddd4...[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:ded334408097f08dde9507428...[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[13A[0J
+[1A[1mExecuting tasks:[0m
+[1m[===========                   ] 38.3% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:ded334408097f08dde9507428...[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[12A[0J
+[1A[1mExecuting tasks:[0m
+[1m[===========                   ] 38.3% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:ded334408097f08dde9507428...[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:bf6ab2a4ddd47ce46630077d0...[0m
+[1m[0m
+[13A[0J
+[1A[1mExecuting tasks:[0m
+[1m[============                  ] 38.3% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:ded334408097f08dde9507428...[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:bf6ab2a4ddd47ce46630077d0...[0m
+[1m[0m
+[13A[0J
+[1A[1mExecuting tasks:[0m
+[1m[============                  ] 40.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:bf6ab2a4ddd47ce46630077d0...[0m
+[1m[0m
+[12A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 41.7% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 41.8% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 41.9% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 42.0% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 42.1% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 42.2% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 42.4% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 42.5% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 42.6% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 42.7% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 42.8% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 42.9% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 43.1% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 43.2% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 43.3% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 43.4% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 43.5% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 43.6% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 43.7% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=============                 ] 43.8% complete[0m
+[1m> building dependencies layer[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[11A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==============                ] 45.5% complete[0m
+[1m> launching layer pushers[0m
+[1m> scheduling building manifests[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m[0m
+[10A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==============                ] 45.5% complete[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> building image format[0m
+[1m[0m
+[10A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==============                ] 45.5% complete[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> building image format[0m
+[1m[0m
+[10A[0J
+[1A
+[1mExecuting tasks:[0m
+[1m[==============                ] 45.5% complete[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> building image format[0m
+[1m[0m
+[10A[0J
+[1AContainer entrypoint set to [java, -cp, @/app/jib-classpath-file, com.alochat.processor.ProcessorApplication]
+[1mExecuting tasks:[0m
+[1m[==============                ] 45.5% complete[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> building image format[0m
+[1m[0m
+[10A[0J
+[1A[1mExecuting tasks:[0m
+[1m[================              ] 53.8% complete[0m
+[1m> scheduling pushing container configurations[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[================              ] 53.8% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing container configuration[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[================              ] 53.8% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing container configuration[0m
+[1m> building a manifest list or a single manifest[0m
+[1m[0m
+[10A[0J
+[1A[1mExecuting tasks:[0m
+[1m[===================           ] 62.1% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing container configuration[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[===================           ] 62.1% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing container configuration[0m
+[1m> checking existence of manifest for sha256:d6c...[0m
+[1m[0m
+[10A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=====================         ] 70.5% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing container configuration[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=====================         ] 70.5% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=====================         ] 70.6% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=====================         ] 70.7% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=====================         ] 70.8% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=====================         ] 70.8% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=====================         ] 71.0% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=====================         ] 71.1% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=====================         ] 71.1% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=====================         ] 71.2% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======================        ] 74.4% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======================        ] 74.5% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======================        ] 74.6% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======================        ] 74.6% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[======================        ] 74.7% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m> pushing blob sha256:5c6dcaf17241670f7f2fc9fd1...[0m
+[1m[0m
+[9A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 79.9% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 80.0% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 80.1% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 80.2% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 80.3% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 80.4% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 80.5% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:6502333748a9e5b5a7e8aaabb...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[8A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 80.6% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 80.7% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 80.8% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 80.9% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 81.0% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 81.1% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 81.2% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 81.3% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 81.4% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 81.5% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:817807f3c64e0b90b66edc7d9...[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[7A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 81.5% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 81.6% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 81.6% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[========================      ] 81.7% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 81.7% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 81.8% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 81.8% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 81.9% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.0% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.1% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.2% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.3% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.4% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.5% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.5% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.6% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.7% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:92b331859550d0b667a6ab321...[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[6A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.7% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.8% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 82.9% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 83.0% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 83.1% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 83.2% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 83.3% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m> pushing blob sha256:5b5507c818083bd626ad03b3d...[0m
+[1m[0m
+[5A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 83.3% complete[0m
+[1m> scheduling pushing manifests[0m
+[1m[0m
+[4A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 83.3% complete[0m
+[1m> launching manifest pushers[0m
+[1m[0m
+[4A[0J
+[1A[1mExecuting tasks:[0m
+[1m[=========================     ] 83.3% complete[0m
+[1m> pushing manifest for latest[0m
+[1m[0m
+[4A[0J
+[1A[1mExecuting tasks:[0m
+[1m[============================  ] 91.7% complete[0m
+[1m> building images to registry[0m
+[1m[0m
+[4A[0J
+[1A[1mExecuting tasks:[0m
+[1m[============================  ] 91.7% complete[0m
+[1m> launching manifest list pushers[0m
+[1m[0m
+[4A[0J
+[1A[1mExecuting tasks:[0m
+[1m[==============================] 100.0% complete[0m
+[1m[0m
+[3A[0J
+[1A
+[1mExecuting tasks:[0m
+[1m[==============================] 100.0% complete[0m
+[1m[0m
+[3A[0J
+[1ABuilt and pushed image as [36m668778694151.dkr.ecr.us-east-1.amazonaws.com/alochat/dev/processor[0m
+[1mExecuting tasks:[0m
+[1m[==============================] 100.0% complete[0m
+[1m[0m
+
+[Incubating] Problems report is available at: file:///home/jose-guerrero/Desktop/aloChat/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 1m
+5 actionable tasks: 2 executed, 3 up-to-date
+2026-03-19T17:15:08.519-0600 [DEBUG] [org.gradle.launcher.daemon.server.exec.ExecuteBuild] The daemon has finished executing the build.
+2026-03-19T17:15:08.523-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] daemon is running. Sleeping until state changes.
+2026-03-19T17:15:08.524-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] Command execution: finished waiting for DaemonCommandExecution[command = Build{id=fc5d2758-786c-42c4-a0f1-454492d4292c, currentDir=/home/jose-guerrero/Desktop/aloChat}, connection = DefaultDaemonConnection: socket connection from /127.0.0.1:40961 to /127.0.0.1:50776]. Result org.gradle.launcher.daemon.server.DaemonStateCoordinator@1039a4df with state Busy
+2026-03-19T17:15:08.524-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] Command execution: completed DaemonCommandExecution[command = Build{id=fc5d2758-786c-42c4-a0f1-454492d4292c, currentDir=/home/jose-guerrero/Desktop/aloChat}, connection = DefaultDaemonConnection: socket connection from /127.0.0.1:40961 to /127.0.0.1:50776]
+2026-03-19T17:15:08.524-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] resetting idle timer
+2026-03-19T17:15:08.524-0600 [INFO] [org.gradle.launcher.daemon.server.DaemonRegistryUpdater] Marking the daemon as idle, address: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]]
+2026-03-19T17:15:08.524-0600 [DEBUG] [org.gradle.launcher.daemon.registry.PersistentDaemonRegistry] Marking busy by address: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]]
+2026-03-19T17:15:08.525-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire exclusive lock on daemon addresses registry.
+2026-03-19T17:15:08.525-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:15:08.525-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:15:08.526-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] daemon is running. Sleeping until state changes.
+2026-03-19T17:15:08.526-0600 [DEBUG] [org.gradle.launcher.daemon.server.exec.ReturnResult] Daemon is dispatching the build result: Success[value=org.gradle.launcher.exec.BuildActionResult@5c1140c0]
+2026-03-19T17:15:08.526-0600 [DEBUG] [org.gradle.launcher.daemon.server.SynchronizedDispatchConnection] thread 31: dispatching Success[value=org.gradle.launcher.exec.BuildActionResult@5c1140c0]
+2026-03-19T17:15:08.528-0600 [DEBUG] [org.gradle.launcher.daemon.server.exec.CleanUpVirtualFileSystemAfterBuild] Cleaning virtual file system after build finished
+2026-03-19T17:15:08.528-0600 [DEBUG] [org.gradle.launcher.daemon.server.DefaultIncomingConnectionHandler] Finishing executing command: Build{id=fc5d2758-786c-42c4-a0f1-454492d4292c, currentDir=/home/jose-guerrero/Desktop/aloChat}
+2026-03-19T17:15:08.528-0600 [DEBUG] [org.gradle.launcher.daemon.server.SynchronizedDispatchConnection] thread 32: received class org.gradle.launcher.daemon.protocol.CloseInput
+2026-03-19T17:15:08.528-0600 [DEBUG] [org.gradle.launcher.daemon.server.DefaultDaemonConnection] thread 32: Received IO message from client: org.gradle.launcher.daemon.protocol.CloseInput@3b475489
+2026-03-19T17:15:08.529-0600 [DEBUG] [org.gradle.launcher.daemon.server.SynchronizedDispatchConnection] thread 32: received class org.gradle.launcher.daemon.protocol.Finished
+2026-03-19T17:15:08.529-0600 [DEBUG] [org.gradle.launcher.daemon.server.DefaultDaemonConnection] thread 32: Received non-IO message from client: org.gradle.launcher.daemon.protocol.Finished@3e1a6464
+2026-03-19T17:15:08.529-0600 [DEBUG] [org.gradle.launcher.daemon.server.DefaultIncomingConnectionHandler] Received finished message: org.gradle.launcher.daemon.protocol.Finished@3e1a6464
+2026-03-19T17:15:08.530-0600 [DEBUG] [org.gradle.launcher.daemon.server.SynchronizedDispatchConnection] thread 31: stopping connection
+2026-03-19T17:15:08.530-0600 [DEBUG] [org.gradle.internal.remote.internal.inet.SocketConnection] Discarding EOFException: java.io.EOFException
+2026-03-19T17:15:08.530-0600 [DEBUG] [org.gradle.launcher.daemon.server.SynchronizedDispatchConnection] thread 32: received null
+2026-03-19T17:15:08.530-0600 [DEBUG] [org.gradle.launcher.daemon.server.DefaultDaemonConnection] thread 32: Received end-of-input from client.
+2026-03-19T17:15:08.531-0600 [DEBUG] [org.gradle.launcher.daemon.server.SynchronizedDispatchConnection] thread 31: stopping connection
+2026-03-19T17:15:11.733-0600 [DEBUG] [org.gradle.cache.internal.locklistener.DefaultFileLockCommunicator] Confirming unlock request to Gradle process at port 57741 for lock with id 8041842500946682797.
+2026-03-19T17:15:11.733-0600 [DEBUG] [org.gradle.cache.internal.LockOnDemandCrossProcessCacheAccess] Lock on artifact cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/modules-2) requested by another process - releasing lock.
+2026-03-19T17:15:11.733-0600 [DEBUG] [org.gradle.cache.internal.LockOnDemandCrossProcessCacheAccess] Releasing file lock for artifact cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/modules-2)
+2026-03-19T17:15:11.733-0600 [DEBUG] [org.gradle.cache.internal.btree.BTreePersistentIndexedCache] Closing cache module-artifact.bin (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/modules-2/metadata-2.107/module-artifact.bin)
+2026-03-19T17:15:11.733-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on artifact cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/modules-2).
+2026-03-19T17:15:11.733-0600 [DEBUG] [org.gradle.cache.internal.locklistener.DefaultFileLockCommunicator] Confirming lock release to Gradle process at port 57741 for lock with id 8041842500946682797.
+2026-03-19T17:15:13.662-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire shared lock on daemon addresses registry.
+2026-03-19T17:15:13.663-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:15:13.664-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:15:13.667-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire shared lock on daemon addresses registry.
+2026-03-19T17:15:13.668-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:15:13.668-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:15:23.662-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire shared lock on daemon addresses registry.
+2026-03-19T17:15:23.663-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:15:23.664-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:15:23.665-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire shared lock on daemon addresses registry.
+2026-03-19T17:15:23.665-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:15:23.666-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:15:23.667-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire shared lock on daemon addresses registry.
+2026-03-19T17:15:23.667-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:15:23.668-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:15:23.668-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire shared lock on daemon addresses registry.
+2026-03-19T17:15:23.669-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:15:23.669-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:15:23.670-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonRegistryUpdater] Storing daemon stop event: other compatible daemons were started and after being idle for 0 minutes and not recently used
+2026-03-19T17:15:23.671-0600 [DEBUG] [org.gradle.launcher.daemon.registry.PersistentDaemonRegistry] Storing daemon stop event with timestamp 1773962123671
+2026-03-19T17:15:23.672-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire exclusive lock on daemon addresses registry.
+2026-03-19T17:15:23.673-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] The file lock for daemon addresses registry is held by a different Gradle process. I was unable to read on which port the owner listens for lock access requests.
+2026-03-19T17:15:23.673-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:15:23.675-0600 [DEBUG] [org.gradle.cache.internal.locklistener.DefaultFileLockContentionHandler] Gradle process at port 57741 confirmed unlock request for lock with id -1099666827006739074.
+2026-03-19T17:15:23.675-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:15:23.676-0600 [LIFECYCLE] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] Daemon will be stopped at the end of the build other compatible daemons were started and after being idle for 0 minutes and not recently used
+2026-03-19T17:15:23.677-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] Marking daemon stopped due to other compatible daemons were started and after being idle for 0 minutes and not recently used. The daemon is not running a build
+2026-03-19T17:15:23.678-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] daemon has stopped.
+2026-03-19T17:15:23.679-0600 [DEBUG] [org.gradle.launcher.daemon.server.Daemon] stop() called on daemon
+2026-03-19T17:15:23.680-0600 [INFO] [org.gradle.launcher.daemon.server.Daemon] Stop requested. Daemon is removing its presence from the registry...
+2026-03-19T17:15:23.680-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonRegistryUpdater] Removing our presence to clients, eg. removing this address from the registry: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]]
+2026-03-19T17:15:23.681-0600 [DEBUG] [org.gradle.launcher.daemon.registry.PersistentDaemonRegistry] Removing daemon address: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]]
+2026-03-19T17:15:23.682-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire exclusive lock on daemon addresses registry.
+2026-03-19T17:15:23.683-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:15:23.685-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:15:23.685-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonRegistryUpdater] Address removed from registry.
+2026-03-19T17:15:23.690-0600 [DEBUG] [org.gradle.cache.internal.LockOnDemandCrossProcessCacheAccess] Releasing file lock for jars (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/jars-9)
+2026-03-19T17:15:23.691-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on jars (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/jars-9).
+2026-03-19T17:15:23.691-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCleanupExecutor] jars (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/jars-9) has last been fully cleaned up 3 hours ago
+2026-03-19T17:15:23.692-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCleanupExecutor] Skipping cleanup for jars (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/jars-9) as it is not yet due
+2026-03-19T17:15:23.692-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCoordinator] Cache jars (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/jars-9) was closed 7 times.
+2026-03-19T17:15:23.693-0600 [DEBUG] [org.gradle.cache.internal.LockOnDemandCrossProcessCacheAccess] Releasing file lock for file content cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/fileContent)
+2026-03-19T17:15:23.693-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on file content cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/fileContent).
+2026-03-19T17:15:23.694-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCoordinator] Cache file content cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/fileContent) was closed 2 times.
+2026-03-19T17:15:23.694-0600 [DEBUG] [org.gradle.internal.watch.vfs.impl.WatchingVirtualFileSystem] Closing VFS, dropping state
+2026-03-19T17:15:23.697-0600 [DEBUG] [org.gradle.internal.watch.registry.impl.DefaultFileWatcherRegistry] Finished listening to file system change events
+2026-03-19T17:15:23.697-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCoordinator] Cache Generated Gradle JARs cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/generated-gradle-jars) was closed 0 times.
+2026-03-19T17:15:23.697-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCleanupExecutor] artifact cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/modules-2) has last been fully cleaned up 3 hours ago
+2026-03-19T17:15:23.698-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCleanupExecutor] Skipping cleanup for artifact cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/modules-2) as it is not yet due
+2026-03-19T17:15:23.698-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCoordinator] Cache artifact cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/modules-2) was closed 69 times.
+2026-03-19T17:15:23.698-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCleanupExecutor] groovy-dsl (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/groovy-dsl) has last been fully cleaned up 3 hours ago
+2026-03-19T17:15:23.698-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCleanupExecutor] Skipping cleanup for groovy-dsl (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/groovy-dsl) as it is not yet due
+2026-03-19T17:15:23.698-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCoordinator] Cache groovy-dsl (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/groovy-dsl) was closed 0 times.
+2026-03-19T17:15:23.699-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCleanupExecutor] Artifact transforms cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/transforms) has last been fully cleaned up 3 hours ago
+2026-03-19T17:15:23.699-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCleanupExecutor] Skipping cleanup for Artifact transforms cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/transforms) as it is not yet due
+2026-03-19T17:15:23.699-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCoordinator] Cache Artifact transforms cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/transforms) was closed 0 times.
+2026-03-19T17:15:23.700-0600 [DEBUG] [org.gradle.cache.internal.LockOnDemandCrossProcessCacheAccess] Releasing file lock for journal cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/journal-1)
+2026-03-19T17:15:23.700-0600 [DEBUG] [org.gradle.cache.internal.btree.BTreePersistentIndexedCache] Closing cache file-access.bin (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/journal-1/file-access.bin)
+2026-03-19T17:15:23.700-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on journal cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/journal-1).
+2026-03-19T17:15:23.701-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCoordinator] Cache journal cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/journal-1) was closed 13 times.
+2026-03-19T17:15:23.701-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCoordinator] Cache file hash cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/fileHashes) was closed 9 times.
+2026-03-19T17:15:23.702-0600 [DEBUG] [org.gradle.cache.internal.DefaultCacheCoordinator] Cache Java compile cache (/home/jose-guerrero/Desktop/aloChat/.gradle-home/caches/8.14.1/javaCompile) was closed 2 times.
+2026-03-19T17:15:23.703-0600 [DEBUG] [org.gradle.internal.operations.DefaultBuildOperationRunner] Build operation 'Deleting unused version-specific caches in /home/jose-guerrero/Desktop/aloChat/.gradle-home/caches' started
+2026-03-19T17:15:23.703-0600 [DEBUG] [org.gradle.internal.operations.DefaultBuildOperationRunner] Completing Build operation 'Deleting unused version-specific caches in /home/jose-guerrero/Desktop/aloChat/.gradle-home/caches'
+2026-03-19T17:15:23.703-0600 [DEBUG] [org.gradle.internal.operations.DefaultBuildOperationRunner] Build operation 'Deleting unused version-specific caches in /home/jose-guerrero/Desktop/aloChat/.gradle-home/caches' completed
+2026-03-19T17:15:23.704-0600 [DEBUG] [org.gradle.launcher.daemon.server.Daemon] stop() called on daemon
+2026-03-19T17:15:23.704-0600 [INFO] [org.gradle.launcher.daemon.server.Daemon] Stop requested. Daemon is removing its presence from the registry...
+2026-03-19T17:15:23.704-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonRegistryUpdater] Removing our presence to clients, eg. removing this address from the registry: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]]
+2026-03-19T17:15:23.704-0600 [DEBUG] [org.gradle.launcher.daemon.registry.PersistentDaemonRegistry] Removing daemon address: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]]
+2026-03-19T17:15:23.705-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire exclusive lock on daemon addresses registry.
+2026-03-19T17:15:23.705-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-03-19T17:15:23.706-0600 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-03-19T17:15:23.706-0600 [DEBUG] [org.gradle.launcher.daemon.server.DaemonRegistryUpdater] Address removed from registry.
+2026-03-19T17:15:23.707-0600 [DEBUG] [org.gradle.cache.internal.locklistener.DefaultFileLockContentionHandler] File lock listener thread completed.
+2026-03-19T17:15:23.725-0600 [DEBUG] [java.lang.Runtime] Runtime.exit() called with status: 0
+java.lang.Throwable: Runtime.exit(0)
+	at java.base/java.lang.Shutdown.logRuntimeExit(Shutdown.java:179)
+	at java.base/java.lang.Shutdown.exit(Shutdown.java:160)
+	at java.base/java.lang.Runtime.exit(Runtime.java:188)
+	at java.base/java.lang.System.exit(System.java:1920)
+	at org.gradle.launcher.bootstrap.ProcessCompleter.complete(ProcessCompleter.java:21)
+	at org.gradle.launcher.bootstrap.EntryPoint.run(EntryPoint.java:61)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.gradle.launcher.bootstrap.ProcessBootstrap.runNoExit(ProcessBootstrap.java:72)
+	at org.gradle.launcher.bootstrap.ProcessBootstrap.run(ProcessBootstrap.java:39)
+	at org.gradle.launcher.daemon.bootstrap.GradleDaemon.main(GradleDaemon.java:22)
+2026-03-19T17:15:23.726-0600 [DEBUG] [org.gradle.launcher.daemon.registry.PersistentDaemonRegistry] Removing daemon address: [ac951e13-1302-4912-aaa4-eef56cd24ccb port:40961, addresses:[localhost/127.0.0.1]]
+Daemon vm is shutting down... The daemon has exited normally or was terminated in response to a user interrupt.
+2026-03-19T17:15:23.726-0600 [DEBUG] [org.gradle.launcher.daemon.server.Daemon] VM shutdown hook was unable to remove the daemon address from the registry. It will be cleaned up later.
+java.lang.IllegalStateException: Cannot start managing file contention because this handler has been closed.
+	at org.gradle.cache.internal.locklistener.DefaultFileLockContentionHandler.assertNotStopped(DefaultFileLockContentionHandler.java:248)
+	at org.gradle.cache.internal.locklistener.DefaultFileLockContentionHandler.reservePort(DefaultFileLockContentionHandler.java:286)
+	at org.gradle.cache.internal.DefaultFileLockManager.lock(DefaultFileLockManager.java:124)
+	at org.gradle.cache.internal.DefaultFileLockManager.lock(DefaultFileLockManager.java:106)
+	at org.gradle.cache.internal.DefaultFileLockManager.lock(DefaultFileLockManager.java:101)
+	at org.gradle.cache.internal.OnDemandFileAccess.updateFile(OnDemandFileAccess.java:51)
+	at org.gradle.cache.internal.FileBackedObjectHolder.update(FileBackedObjectHolder.java:77)
+	at org.gradle.cache.internal.FileIntegrityViolationSuppressingObjectHolderDecorator.lambda$update$0(FileIntegrityViolationSuppressingObjectHolderDecorator.java:48)
+	at org.gradle.cache.internal.FileIntegrityViolationSuppressingObjectHolderDecorator.doUpdate(FileIntegrityViolationSuppressingObjectHolderDecorator.java:58)
+	at org.gradle.cache.internal.FileIntegrityViolationSuppressingObjectHolderDecorator.update(FileIntegrityViolationSuppressingObjectHolderDecorator.java:48)
+	at org.gradle.launcher.daemon.registry.PersistentDaemonRegistry.remove(PersistentDaemonRegistry.java:133)
+	at org.gradle.launcher.daemon.server.Daemon$1.run(Daemon.java:133)
+	at java.base/java.lang.Thread.run(Thread.java:1583)

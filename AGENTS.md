@@ -85,11 +85,24 @@ Antes de agregar codigo nuevo:
 - El corpus inicial real de negocio proviene del inventario de tienda y debe mantenerse normalizado dentro del repo para el MVP.
 - La memoria conversacional durable se resume por `tenantId:channel:userId:conversationId`.
 - Los futuros mensajes proactivos deben salir de `campaign hints` durables, no de Redis.
+- En el MVP actual, los `campaign hints` se materializan dentro de `services/ai-orchestrator` mediante un scheduler pequeño; no existe aun un microservicio dedicado de campañas.
 - OpenSearch Serverless es la opcion elegida para el vector store del MVP ampliado.
 - El modelo de embeddings objetivo en `us-east-1` es `amazon.titan-embed-text-v2:0`.
 - La estrategia vigente de tenancy es `multi-tenant logico`.
 - La evolucion prevista es permitir `tenant premium` con stack dedicado cuando haga falta.
 - Los secretos Web se resuelven por tenant con la ruta `alochat/{env}/tenants/{tenantId}/channels/web/ingress-signing-key`.
+- Regla operativa permanente: no ejecutar el mismo comando mas de 2 veces seguidas si falla; en ese punto detenerse, reportar el bloqueo y pedir al usuario que corrija la parte operativa antes de insistir.
+
+## Estado actual del MVP
+- `Telegram` y `Web` ya entran por `API Gateway -> inbound-adapter -> Kafka -> processor -> ai-orchestrator -> outbound-dispatcher`.
+- `OpenSearch Serverless` ya se usa para `kb_corpus` y `chat_memory`.
+- `ai-orchestrator` ya aplica reranking heuristico para responder de forma conservadora y mas natural usando solo inventario/corpus.
+- `ai-orchestrator` ya genera `campaign hints` durables y los procesa por scheduler para:
+  - seguimiento por tiempo desde ultima consulta/proyecto
+  - vigilancia de cambio de precio sobre productos de interes
+- `Web` todavia no recibe push; para consumo de mensajes salientes y proactivos debe usar:
+  - `GET /api/v1/web/messages/{messageId}`
+  - `GET /api/v1/web/messages/conversation/{conversationId}?limit=20`
 
 ## Ingesta / Verificación RAG (OpenSearch)
 ### Verificar conteo actual del índice `kb_corpus`

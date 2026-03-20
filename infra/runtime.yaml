@@ -129,6 +129,15 @@ Resources:
       ToPort: 8082
       SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
 
+  ApplicationIngressFromAppServices:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref ApplicationSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 8080
+      ToPort: 8083
+      SourceSecurityGroupId: !Ref ApplicationSecurityGroupId
+
   InboundLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -151,6 +160,58 @@ Resources:
       HealthCheckPath: /actuator/health
       Matcher:
         HttpCode: 200
+
+  InboundDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Description: Internal discovery entry for inbound-adapter
+      DnsConfig:
+        DnsRecords:
+          - TTL: 10
+            Type: A
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+      Name: inbound-adapter
+      NamespaceId: !Ref ServiceDiscoveryNamespace
+
+  ProcessorDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Description: Internal discovery entry for processor
+      DnsConfig:
+        DnsRecords:
+          - TTL: 10
+            Type: A
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+      Name: processor
+      NamespaceId: !Ref ServiceDiscoveryNamespace
+
+  AiDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Description: Internal discovery entry for ai-orchestrator
+      DnsConfig:
+        DnsRecords:
+          - TTL: 10
+            Type: A
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+      Name: ai-orchestrator
+      NamespaceId: !Ref ServiceDiscoveryNamespace
+
+  OutboundDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Description: Internal discovery entry for outbound-dispatcher
+      DnsConfig:
+        DnsRecords:
+          - TTL: 10
+            Type: A
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+      Name: outbound-dispatcher
+      NamespaceId: !Ref ServiceDiscoveryNamespace
 
   InboundHttpListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -419,6 +480,8 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                   - dynamodb:GetItem
+                  - dynamodb:Scan
+                  - dynamodb:UpdateItem
                 Resource:
                   - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${MessageAuditTableName}
                   - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${ConversationMemoryTableName}
@@ -727,6 +790,9 @@ Resources:
           SecurityGroups:
             - !Ref ApplicationSecurityGroupId
           Subnets: !Ref PrivateSubnetIds
+      ServiceRegistries:
+        - RegistryArn: !GetAtt InboundDiscoveryService.Arn
+          ContainerName: inbound-adapter
       ServiceName: !Sub ${ProjectName}-${EnvironmentName}-inbound-adapter
       TaskDefinition: !Ref InboundTaskDefinition
 
@@ -743,6 +809,9 @@ Resources:
           SecurityGroups:
             - !Ref ApplicationSecurityGroupId
           Subnets: !Ref PrivateSubnetIds
+      ServiceRegistries:
+        - RegistryArn: !GetAtt ProcessorDiscoveryService.Arn
+          ContainerName: processor
       ServiceName: !Sub ${ProjectName}-${EnvironmentName}-processor
       TaskDefinition: !Ref ProcessorTaskDefinition
 
@@ -759,6 +828,9 @@ Resources:
           SecurityGroups:
             - !Ref ApplicationSecurityGroupId
           Subnets: !Ref PrivateSubnetIds
+      ServiceRegistries:
+        - RegistryArn: !GetAtt AiDiscoveryService.Arn
+          ContainerName: ai-orchestrator
       ServiceName: !Sub ${ProjectName}-${EnvironmentName}-ai-orchestrator
       TaskDefinition: !Ref AiTaskDefinition
 
@@ -775,16 +847,25 @@ Resources:
           SecurityGroups:
             - !Ref ApplicationSecurityGroupId
           Subnets: !Ref PrivateSubnetIds
+      ServiceRegistries:
+        - RegistryArn: !GetAtt OutboundDiscoveryService.Arn
+          ContainerName: outbound-dispatcher
       ServiceName: !Sub ${ProjectName}-${EnvironmentName}-outbound-dispatcher
       TaskDefinition: !Ref OutboundTaskDefinition
 
 Outputs:
   ClusterName:
     Value: !Ref RuntimeCluster
+  HttpApiId:
+    Value: !Ref HttpApi
   HttpApiUrl:
     Value: !GetAtt HttpApi.ApiEndpoint
   LoadBalancerDnsName:
     Value: !GetAtt InboundLoadBalancer.DNSName
+  ServiceDiscoveryNamespaceId:
+    Value: !Ref ServiceDiscoveryNamespace
+  ServiceDiscoveryNamespaceName:
+    Value: !Sub ${EnvironmentName}.${ProjectName}.local
   InboundServiceName:
     Value: !Ref InboundService
   ProcessorServiceName:

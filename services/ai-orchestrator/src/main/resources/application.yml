@@ -78,3 +78,7 @@ alochat:
     retry-delay:
       short-ms: 2000
       long-ms: 10000
+  campaigns:
+    enabled: true
+    poll-interval-ms: 300000
+    initial-delay-ms: 60000

@@ -329,6 +329,13 @@ Resources:
         ScanOnPush: true
       RepositoryName: !Sub ${ProjectName}/${EnvironmentName}/outbound-dispatcher
 
+  ObservabilityCollectorRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      RepositoryName: !Sub ${ProjectName}/${EnvironmentName}/observability-collector
+
 Outputs:
   VpcId:
     Value: !Ref Vpc
@@ -366,3 +373,5 @@ Outputs:
     Value: !GetAtt AiOrchestratorRepository.RepositoryUri
   OutboundDispatcherRepositoryUri:
     Value: !GetAtt OutboundDispatcherRepository.RepositoryUri
+  ObservabilityCollectorRepositoryUri:
+    Value: !GetAtt ObservabilityCollectorRepository.RepositoryUri

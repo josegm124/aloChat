@@ -1,0 +1,94 @@
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  sigv4auth:
+    region: ${env:AWS_REGION}
+    service: aps
+
+receivers:
+  prometheus:
+    config:
+      global:
+        scrape_interval: ${env:PROMETHEUS_SCRAPE_INTERVAL}
+      scrape_configs:
+        - job_name: inbound-adapter
+          metrics_path: /actuator/prometheus
+          static_configs:
+            - targets:
+                - ${env:INBOUND_ADAPTER_TARGET}
+              labels:
+                service: inbound-adapter
+                environment: ${env:ENVIRONMENT_NAME}
+                project: ${env:PROJECT_NAME}
+        - job_name: processor
+          metrics_path: /actuator/prometheus
+          static_configs:
+            - targets:
+                - ${env:PROCESSOR_TARGET}
+              labels:
+                service: processor
+                environment: ${env:ENVIRONMENT_NAME}
+                project: ${env:PROJECT_NAME}
+        - job_name: ai-orchestrator
+          metrics_path: /actuator/prometheus
+          static_configs:
+            - targets:
+                - ${env:AI_ORCHESTRATOR_TARGET}
+              labels:
+                service: ai-orchestrator
+                environment: ${env:ENVIRONMENT_NAME}
+                project: ${env:PROJECT_NAME}
+        - job_name: outbound-dispatcher
+          metrics_path: /actuator/prometheus
+          static_configs:
+            - targets:
+                - ${env:OUTBOUND_DISPATCHER_TARGET}
+              labels:
+                service: outbound-dispatcher
+                environment: ${env:ENVIRONMENT_NAME}
+                project: ${env:PROJECT_NAME}
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 256
+  resource:
+    attributes:
+      - key: project
+        value: ${env:PROJECT_NAME}
+        action: upsert
+      - key: environment
+        value: ${env:ENVIRONMENT_NAME}
+        action: upsert
+
+exporters:
+  prometheusremotewrite:
+    endpoint: ${env:AMP_REMOTE_WRITE_URL}
+    auth:
+      authenticator: sigv4auth
+    remote_write_queue:
+      enabled: true
+      queue_size: 1024
+      num_consumers: 4
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 120s
+
+service:
+  telemetry:
+    logs:
+      level: debug
+  extensions:
+    - health_check
+    - sigv4auth
+  pipelines:
+    metrics:
+      receivers:
+        - prometheus
+      processors:
+        - resource
+        - batch
+      exporters:
+        - prometheusremotewrite

@@ -6,7 +6,9 @@ import com.alochat.contracts.message.MessageStatus;
 import com.alochat.inbound.api.MessageStatusResponse;
 import com.alochat.inbound.port.InboundMessageAuditRepository;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +17,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 
 @Repository
 public class DynamoDbInboundMessageAuditRepository implements InboundMessageAuditRepository {
@@ -69,6 +72,36 @@ public class DynamoDbInboundMessageAuditRepository implements InboundMessageAudi
                 Instant.parse(readString(item, "updatedAt")),
                 readString(item, "contentText")
         ));
+    }
+
+    @Override
+    public List<MessageStatusResponse> findByConversationId(String conversationId, MessageStatus status, int limit) {
+        Map<String, AttributeValue> values = Map.of(
+                ":conversationId", AttributeValue.fromS(conversationId)
+        );
+
+        List<MessageStatusResponse> responses = dynamoDbClient.query(QueryRequest.builder()
+                        .tableName(tableName)
+                        .indexName("ConversationIdIndex")
+                        .keyConditionExpression("conversationId = :conversationId")
+                        .expressionAttributeValues(values)
+                        .build())
+                .items()
+                .stream()
+                .filter(item -> readString(item, "status").equals(status.name()))
+                .map(item -> new MessageStatusResponse(
+                        readString(item, "messageId"),
+                        readString(item, "conversationId"),
+                        Channel.valueOf(readString(item, "channel")),
+                        MessageStatus.valueOf(readString(item, "status")),
+                        Instant.parse(readString(item, "updatedAt")),
+                        readString(item, "contentText")
+                ))
+                .sorted(Comparator.comparing(MessageStatusResponse::updatedAt).reversed())
+                .limit(limit)
+                .toList();
+
+        return List.copyOf(responses);
     }
 
     private String readString(Map<String, AttributeValue> item, String key) {
