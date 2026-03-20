@@ -105,6 +105,8 @@ public class ClasspathStoreKnowledgeRetriever implements KnowledgeRetriever, Cat
         metadata.put("priceMxn", item.priceMxn());
         metadata.put("unit", item.unit());
         metadata.put("usage", item.usage());
+        metadata.put("language", "es");
+        metadata.put("docType", "product");
 
         return new KnowledgeSnippet(
                 item.itemId(),

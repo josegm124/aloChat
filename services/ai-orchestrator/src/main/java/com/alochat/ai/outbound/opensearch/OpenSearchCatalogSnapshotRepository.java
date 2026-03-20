@@ -62,6 +62,17 @@ public class OpenSearchCatalogSnapshotRepository implements CatalogSnapshotRepos
             ObjectNode term = mapper.createObjectNode();
             term.put("tenantId", tenantId);
             filter.addObject().set("term", term);
+            ObjectNode docTypeFilter = mapper.createObjectNode();
+            ObjectNode docTypeBool = docTypeFilter.putObject("bool");
+            ArrayNode shouldDocTypes = docTypeBool.putArray("should");
+            ObjectNode productTerm = mapper.createObjectNode();
+            productTerm.put("docType", "product");
+            shouldDocTypes.addObject().set("term", productTerm);
+            ObjectNode missingDocType = mapper.createObjectNode();
+            missingDocType.putObject("bool").putObject("must_not").putObject("exists").put("field", "docType");
+            shouldDocTypes.add(missingDocType);
+            docTypeBool.put("minimum_should_match", 1);
+            filter.add(docTypeFilter);
         }
 
         OpenSearchClient.OpenSearchResponse response = client.post("/" + index + "/_search", body.toString());

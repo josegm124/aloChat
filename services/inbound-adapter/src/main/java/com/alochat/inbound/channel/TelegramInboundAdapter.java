@@ -39,6 +39,7 @@ public class TelegramInboundAdapter implements ChannelInboundAdapter {
         String conversationId = JsonNodeReader.text(message, "chat", "id");
         String userId = JsonNodeReader.text(message, "from", "id");
         String text = JsonNodeReader.text(message, "text");
+        String languageCode = JsonNodeReader.nullToEmpty(JsonNodeReader.text(message, "from", "language_code"));
         String externalKey = identityService.externalKey(conversationId, externalMessageId);
 
         return new MessageEnvelope(
@@ -55,10 +56,20 @@ public class TelegramInboundAdapter implements ChannelInboundAdapter {
                 null,
                 Map.of(
                         "source", "telegram",
-                        "updateId", JsonNodeReader.nullToEmpty(JsonNodeReader.text(payload, "update_id"))
+                        "updateId", JsonNodeReader.nullToEmpty(JsonNodeReader.text(payload, "update_id")),
+                        "locale", languageCode,
+                        "preferredLanguage", normalizeLanguage(languageCode)
                 ),
                 null,
                 MessageStatus.NORMALIZED
         );
+    }
+
+    private String normalizeLanguage(String languageCode) {
+        String normalized = languageCode == null ? "" : languageCode.trim().toLowerCase();
+        if (normalized.startsWith("en")) {
+            return "en";
+        }
+        return "es";
     }
 }

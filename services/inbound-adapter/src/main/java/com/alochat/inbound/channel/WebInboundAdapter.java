@@ -33,6 +33,7 @@ public class WebInboundAdapter implements ChannelInboundAdapter {
         String userId = JsonNodeReader.text(payload, "user", "id");
         String tenantId = JsonNodeReader.firstNonBlank(JsonNodeReader.text(payload, "tenantId"), "default");
         String text = JsonNodeReader.text(payload, "message", "text");
+        String locale = JsonNodeReader.nullToEmpty(JsonNodeReader.text(payload, "context", "locale"));
         String externalKey = identityService.externalKey(tenantId, externalMessageId);
 
         return new MessageEnvelope(
@@ -51,11 +52,20 @@ public class WebInboundAdapter implements ChannelInboundAdapter {
                         "source", "web",
                         "sessionId", JsonNodeReader.nullToEmpty(JsonNodeReader.text(payload, "context", "session", "id")),
                         "userRole", JsonNodeReader.nullToEmpty(JsonNodeReader.text(payload, "user", "role")),
-                        "locale", JsonNodeReader.nullToEmpty(JsonNodeReader.text(payload, "context", "locale")),
+                        "locale", locale,
+                        "preferredLanguage", normalizeLanguage(locale),
                         "clientApp", JsonNodeReader.nullToEmpty(JsonNodeReader.text(payload, "context", "client", "app"))
                 ),
                 null,
                 MessageStatus.NORMALIZED
         );
+    }
+
+    private String normalizeLanguage(String locale) {
+        String normalized = locale == null ? "" : locale.trim().toLowerCase();
+        if (normalized.startsWith("en")) {
+            return "en";
+        }
+        return "es";
     }
 }

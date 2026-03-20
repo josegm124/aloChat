@@ -3,6 +3,8 @@
 ## Corpus inicial del negocio
 El corpus de la tienda se compone de:
 - inventario de productos
+- variantes por idioma del mismo producto
+- ofertas y promociones vigentes
 - categoria o tipo de pintura
 - precio
 - uso recomendado
@@ -24,12 +26,24 @@ Version normalizada dentro del repo:
 - `productName`
 - `category`
 - `priceMxn`
+- `language`
+- `docType`
+- `unit`
 - `usage`
 - `tenantId`
 - `sourceVersion`
-4. subir documentos a S3
-5. indexarlos en `kb_corpus`
-6. exponer retrieval al `ai-orchestrator`
+4. si existen promociones vigentes, agregar documentos `offer` con:
+- `regularPriceMxn`
+- `promoPriceMxn`
+- `promotionType`
+- `offerTitle`
+- `offerDescription`
+- `validFrom`
+- `validUntil`
+- `offerActive`
+5. subir documentos a S3
+6. indexarlos en `kb_corpus`
+7. exponer retrieval al `ai-orchestrator`
 
 ## Flujo objetivo de memoria
 1. llega consulta
@@ -45,3 +59,31 @@ Version normalizada dentro del repo:
 - no mezclar indices de corpus y memoria
 - no meter secretos en el body de requests
 - no usar Redis como fuente de verdad para memoria larga
+- el corpus de producto puede existir en `es` y `en`; retrieval debe priorizar el idioma preferido y caer al otro idioma solo si hace falta
+- las promociones van en el mismo `kb_corpus` pero con `docType=offer`; no se mezclan como texto suelto dentro del producto base
+
+## Ingesta recomendada actual
+Ejemplo de ingesta bilingue del inventario:
+
+```bash
+python3 tools/knowledge/ingest_storage.py \
+  /ruta/al/inventario.txt \
+  --endpoint https://<collection>.us-east-1.aoss.amazonaws.com \
+  --index kb_corpus \
+  --region us-east-1 \
+  --tenant acme \
+  --languages es,en
+```
+
+Ejemplo con ofertas activas:
+
+```bash
+python3 tools/knowledge/ingest_storage.py \
+  /ruta/al/inventario.txt \
+  --endpoint https://<collection>.us-east-1.aoss.amazonaws.com \
+  --index kb_corpus \
+  --region us-east-1 \
+  --tenant acme \
+  --languages es,en \
+  --offers-file docs/examples/store_offers.sample.json
+```

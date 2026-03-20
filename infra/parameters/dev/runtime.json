@@ -53,7 +53,7 @@
   },
   {
     "ParameterKey": "InboundAdapterImageUri",
-    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alochat/dev/inbound-adapter@sha256:652cbf25b6ef1f0c23264fede04b02bdc9b4a79fc618912f7188ca19dfd8100d"
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alochat/dev/inbound-adapter@sha256:78249b85f6af78872ec6299ae81f637413239f7f060345ca7713be5fa60f9925"
   },
   {
     "ParameterKey": "ProcessorImageUri",
@@ -61,7 +61,7 @@
   },
   {
     "ParameterKey": "AiOrchestratorImageUri",
-    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alochat/dev/ai-orchestrator@sha256:b65428649f8e10bbe30e047377c4247f59c204f4f7e47d6e2e4d96c904de9e1e"
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alochat/dev/ai-orchestrator@sha256:771df36eac218d5c7aeac27ab2824cf208c36cb4361fc7aecba80dc5ca7d6241"
   },
   {
     "ParameterKey": "OutboundDispatcherImageUri",

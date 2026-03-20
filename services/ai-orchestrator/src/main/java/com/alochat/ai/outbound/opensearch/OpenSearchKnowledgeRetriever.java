@@ -54,6 +54,8 @@ public class OpenSearchKnowledgeRetriever implements KnowledgeRetriever {
         }
 
         String tenantId = safeText(envelope.tenantId());
+        String preferredLanguage = resolvePreferredLanguage(envelope);
+        boolean asksPromotion = asksPromotion(question);
         ObjectNode body = mapper.createObjectNode();
         body.put("size", limit);
 
@@ -64,6 +66,15 @@ public class OpenSearchKnowledgeRetriever implements KnowledgeRetriever {
         String expandedQuestion = expandQuestion(question);
         if (!expandedQuestion.equalsIgnoreCase(question)) {
             should.addObject().set("multi_match", buildMultiMatch(expandedQuestion, 3, 4, 3));
+        }
+        if (!preferredLanguage.isBlank()) {
+            should.addObject().set("term", buildBoostedTerm("language", preferredLanguage, 5));
+        }
+        if (asksPromotion) {
+            should.addObject().set("term", buildBoostedTerm("docType", "offer", 7));
+            should.addObject().set("term", buildBoostedTerm("offerActive", true, 6));
+        } else {
+            should.addObject().set("term", buildBoostedTerm("docType", "product", 2));
         }
         queryNode.put("minimum_should_match", 1);
 
@@ -92,6 +103,10 @@ public class OpenSearchKnowledgeRetriever implements KnowledgeRetriever {
         fields.add("productName^" + productBoost);
         fields.add("category^" + categoryBoost);
         fields.add("usage^" + usageBoost);
+        fields.add("offerTitle^5");
+        fields.add("offerDescription^4");
+        fields.add("promotionType^3");
+        fields.add("searchText^2");
         fields.add("itemId");
         return multiMatch;
     }
@@ -119,8 +134,29 @@ public class OpenSearchKnowledgeRetriever implements KnowledgeRetriever {
         if (containsAny(normalized, "madera", "puerta", "barniz")) {
             tokens.add("pintura madera barniz esmalte");
         }
+        if (containsAny(normalized, "discount", "offer", "promotion", "sale", "deal", "descuento", "oferta", "promocion", "rebaja")) {
+            tokens.add("descuento oferta promocion rebaja sale discount offer promotion");
+        }
 
         return String.join(" ", tokens);
+    }
+
+    private ObjectNode buildBoostedTerm(String field, String value, int boost) {
+        ObjectNode wrapper = mapper.createObjectNode();
+        ObjectNode termNode = mapper.createObjectNode();
+        termNode.put("value", value);
+        termNode.put("boost", boost);
+        wrapper.set(field, termNode);
+        return wrapper;
+    }
+
+    private ObjectNode buildBoostedTerm(String field, boolean value, int boost) {
+        ObjectNode wrapper = mapper.createObjectNode();
+        ObjectNode termNode = mapper.createObjectNode();
+        termNode.put("value", value);
+        termNode.put("boost", boost);
+        wrapper.set(field, termNode);
+        return wrapper;
     }
 
     private List<KnowledgeSnippet> parseSnippets(String payload) {
@@ -137,8 +173,22 @@ public class OpenSearchKnowledgeRetriever implements KnowledgeRetriever {
                 String usage = source.path("usage").asText("");
                 String category = source.path("category").asText("");
                 String price = source.path("priceMxn").asText("");
+                String regularPrice = source.path("regularPriceMxn").asText("");
+                String promoPrice = source.path("promoPriceMxn").asText("");
                 String tenantId = source.path("tenantId").asText("");
+                String unit = source.path("unit").asText("");
+                String language = source.path("language").asText("");
+                String docType = source.path("docType").asText("");
+                String promotionType = source.path("promotionType").asText("");
+                String offerTitle = source.path("offerTitle").asText("");
+                String offerDescription = source.path("offerDescription").asText("");
+                String validFrom = source.path("validFrom").asText("");
+                String validUntil = source.path("validUntil").asText("");
+                boolean offerActive = source.path("offerActive").asBoolean(false);
                 double score = hit.path("_score").asDouble(0.0);
+                String effectivePrice = !price.isBlank() ? price : (!promoPrice.isBlank() ? promoPrice : regularPrice);
+                String excerpt = !offerDescription.isBlank() ? offerDescription : usage;
+                String title = !offerTitle.isBlank() ? productName : productName;
 
                 Map<String, String> metadata = new LinkedHashMap<>();
                 if (!productName.isBlank()) {
@@ -147,20 +197,53 @@ public class OpenSearchKnowledgeRetriever implements KnowledgeRetriever {
                 if (!category.isBlank()) {
                     metadata.put("category", category);
                 }
-                if (!price.isBlank()) {
-                    metadata.put("priceMxn", price);
+                if (!effectivePrice.isBlank()) {
+                    metadata.put("priceMxn", effectivePrice);
                 }
                 if (!usage.isBlank()) {
                     metadata.put("usage", usage);
                 }
+                if (!unit.isBlank()) {
+                    metadata.put("unit", unit);
+                }
                 if (!tenantId.isBlank()) {
                     metadata.put("tenantId", tenantId);
+                }
+                if (!language.isBlank()) {
+                    metadata.put("language", language);
+                }
+                if (!docType.isBlank()) {
+                    metadata.put("docType", docType);
+                }
+                if (!regularPrice.isBlank()) {
+                    metadata.put("regularPriceMxn", regularPrice);
+                }
+                if (!promoPrice.isBlank()) {
+                    metadata.put("promoPriceMxn", promoPrice);
+                }
+                if (!promotionType.isBlank()) {
+                    metadata.put("promotionType", promotionType);
+                }
+                if (!offerTitle.isBlank()) {
+                    metadata.put("offerTitle", offerTitle);
+                }
+                if (!offerDescription.isBlank()) {
+                    metadata.put("offerDescription", offerDescription);
+                }
+                if (!validFrom.isBlank()) {
+                    metadata.put("validFrom", validFrom);
+                }
+                if (!validUntil.isBlank()) {
+                    metadata.put("validUntil", validUntil);
+                }
+                if (offerActive) {
+                    metadata.put("offerActive", "true");
                 }
 
                 snippets.add(new KnowledgeSnippet(
                         hit.path("_id").asText(),
-                        productName,
-                        usage,
+                        title,
+                        excerpt,
                         "opensearch",
                         index,
                         score,
@@ -175,6 +258,30 @@ public class OpenSearchKnowledgeRetriever implements KnowledgeRetriever {
 
     private String safeText(String value) {
         return value == null ? "" : value;
+    }
+
+    private String resolvePreferredLanguage(MessageEnvelope envelope) {
+        String preferredLanguage = safeText(envelope.metadata().get("preferredLanguage")).toLowerCase(Locale.ROOT);
+        if (preferredLanguage.startsWith("en")) {
+            return "en";
+        }
+        if (preferredLanguage.startsWith("es")) {
+            return "es";
+        }
+        String locale = safeText(envelope.metadata().get("locale")).toLowerCase(Locale.ROOT);
+        if (locale.startsWith("en")) {
+            return "en";
+        }
+        if (locale.startsWith("es")) {
+            return "es";
+        }
+        return "";
+    }
+
+    private boolean asksPromotion(String question) {
+        String normalized = safeText(question).toLowerCase(Locale.ROOT);
+        return containsAny(normalized, "discount", "offer", "promotion", "sale", "deal",
+                "descuento", "oferta", "promocion", "rebaja");
     }
 
     private boolean containsAny(String input, String... tokens) {

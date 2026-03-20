@@ -1,0 +1,15 @@
+[
+  {
+    "itemId": "3",
+    "productName": "Behr Premium Plus",
+    "promotionType": "seasonal-discount",
+    "regularPriceMxn": 3900,
+    "promoPriceMxn": 3490,
+    "validFrom": "2026-03-20",
+    "validUntil": "2026-03-31",
+    "titleEs": "Oferta de temporada para Behr Premium Plus",
+    "descriptionEs": "Behr Premium Plus baja de 3900 MXN a 3490 MXN durante la promocion de temporada.",
+    "titleEn": "Seasonal offer for Behr Premium Plus",
+    "descriptionEn": "Behr Premium Plus drops from 3900 MXN to 3490 MXN during the seasonal promotion."
+  }
+]
