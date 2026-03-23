@@ -12,11 +12,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = 'alochat'
-
-include('libs:message-contracts')
-include('tools:msk-admin')
-include('services:inbound-adapter')
-include('services:processor')
-include('services:ai-orchestrator')
-include('services:outbound-dispatcher')
+rootProject.name = 'alo'
