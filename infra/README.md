@@ -49,6 +49,48 @@ En MSK Serverless, el bootstrap server se consulta despues con AWS CLI usando el
 Para `ai-rag.yaml`, necesitas `VpcId`, `PrivateSubnetIds`, `EndpointSecurityGroupId` y el output `AiTaskRoleArn` del stack `runtime`.
 Para `managed-observability.yaml`, necesitas el cluster ECS del runtime, subnets privadas, security group de aplicacion, `HttpApiId` y la imagen del collector Prometheus.
 
+## CI/CD dev actual
+El repo ya incluye automatizacion base con GitHub Actions:
+- `.github/workflows/ci.yml`
+- `.github/workflows/cd-dev.yml`
+
+`ci.yml`:
+- corre en `pull_request`
+- corre en `push` a `master`
+- ejecuta `./gradlew test` y `./gradlew build -x test`
+
+`cd-dev.yml`:
+- corre en `push` a `master`
+- tambien se puede correr por `workflow_dispatch`
+- construye/pushea imagenes a ECR via `jib`
+- despliega `infra/runtime.yaml` con `aws cloudformation deploy`
+- espera estabilidad de servicios ECS
+
+## GitHub OIDC -> AWS
+Configuracion operativa actual para `cd-dev.yml`:
+- OIDC provider AWS: `token.actions.githubusercontent.com`
+- IAM role: `github-actions-alochat-dev`
+- GitHub Environment: `dev`
+- variables GitHub:
+  - `AWS_REGION`
+  - `ECR_REGISTRY`
+  - `AWS_ROLE_ARN`
+- secret GitHub:
+  - `TELEGRAM_BOT_TOKEN`
+
+Detalle critico:
+- `cd-dev.yml` usa `environment: dev`
+- por eso el `sub` del token OIDC debe ser:
+  - `repo:josegm124/aloChat:environment:dev`
+- si el trust policy del role se configura con:
+  - `repo:josegm124/aloChat:ref:refs/heads/master`
+- el paso `aws-actions/configure-aws-credentials@v4` falla con:
+  - `Not authorized to perform sts:AssumeRoleWithWebIdentity`
+
+Activacion:
+- `CI`: al abrir/actualizar PR o hacer `push` a `master`
+- `CD Dev`: al hacer `push` a `master` o manualmente desde `Actions`
+
 ## Hardening actual
 `foundation.yaml` ahora deja:
 - NAT Gateway opcional

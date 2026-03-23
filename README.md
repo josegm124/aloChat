@@ -172,6 +172,34 @@ aloChat/
 - `docker compose -f local/compose.yaml up -d`
 - `./gradlew :services:inbound-adapter:bootRun`
 
+## CI/CD actual
+El repositorio ya incluye automatizacion base en GitHub Actions:
+- `/.github/workflows/ci.yml`: corre en `pull_request` y en `push` a `master`.
+- `/.github/workflows/cd-dev.yml`: corre en `push` a `master` y por `workflow_dispatch`.
+
+Flujo actual:
+1. `CI` ejecuta `./gradlew test` y despues `./gradlew build -x test`.
+2. `CD Dev` autentica con AWS por OIDC.
+3. construye y publica imagenes en ECR con `jib`.
+4. despliega `infra/runtime.yaml` por `aws cloudformation deploy`.
+5. espera a que los servicios ECS queden estables.
+
+Configuracion externa necesaria:
+- GitHub `Environment`: `dev`
+- variables: `AWS_REGION`, `ECR_REGISTRY`, `AWS_ROLE_ARN`
+- secret: `TELEGRAM_BOT_TOKEN`
+- rol AWS para GitHub Actions: `github-actions-alochat-dev`
+
+Detalle critico de OIDC:
+- el job de `CD Dev` usa `environment: dev`
+- por eso el `sub` del trust policy no usa rama, usa:
+  - `repo:josegm124/aloChat:environment:dev`
+- si el trust policy se deja con `refs/heads/master`, `aws-actions/configure-aws-credentials` falla con `Not authorized to perform sts:AssumeRoleWithWebIdentity`
+
+Activacion:
+- `CI`: se activa al abrir/actualizar PR y al hacer `push` a `master`
+- `CD Dev`: se activa al hacer `push` a `master` o manualmente desde la pestaña `Actions`
+
 ## Primer entregable tecnico recomendado
 Si arrancamos correctamente, el primer hito debe ser este:
 - `inbound-adapter` expuesto por API Gateway

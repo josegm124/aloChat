@@ -564,20 +564,36 @@ Donde esta:
 - `services/*/build.gradle`
 - `tools/msk-admin/build.gradle`
 - wrapper: `gradlew`, `gradle/wrapper/*`
+- CI: `.github/workflows/ci.yml`
+- CD dev: `.github/workflows/cd-dev.yml`
 
 Como se hizo:
 - build multi-modulo Gradle
 - Java 21 en todos los servicios
 - plugin `jib` para crear imagenes sin Dockerfile por servicio
+- GitHub Actions para automatizar validacion y despliegue
+- autenticacion AWS desde GitHub por OIDC en lugar de access keys estaticas
+- `aws cloudformation deploy` para mantener IaC como fuente de verdad del runtime
 
 Para que sirve:
 - compilar/validar artefactos
 - publicar imagenes listas para ECS
 - estandarizar runtime de todos los microservicios
+- automatizar el paso `build -> push ECR -> deploy ECS/CloudFormation`
 
 Estado actual importante:
-- no hay pipeline CI/CD automatizado en repo (`.github/workflows`, `Jenkinsfile`, `.gitlab-ci.yml` no existen)
-- hoy el flujo de build/deploy es operativo/manual con comandos y AWS CLI
+- si existe pipeline CI/CD automatizado base en el repo
+- `CI` corre en `pull_request` y `push` a `master`
+- `CD Dev` corre en `push` a `master` y por ejecucion manual
+- `CI` hace `./gradlew test` y `./gradlew build -x test`
+- `CD Dev` construye 4 imagenes, las sube a ECR y despliega `infra/runtime.yaml`
+- `CD Dev` requiere `GitHub Environment dev` con:
+  - variables `AWS_REGION`, `ECR_REGISTRY`, `AWS_ROLE_ARN`
+  - secret `TELEGRAM_BOT_TOKEN`
+- el role AWS de GitHub Actions es `github-actions-alochat-dev`
+- como el job usa `environment: dev`, el trust policy OIDC debe usar:
+  - `repo:josegm124/aloChat:environment:dev`
+- si se deja el trust policy por rama (`refs/heads/master`), falla `sts:AssumeRoleWithWebIdentity`
 
 ### 13.5 Pipeline de conocimiento (data/AI ingest)
 
@@ -653,4 +669,4 @@ Para que sirve:
 
 ### 13.9 Prompt sugerido para imagen de pipelines
 
-"Create a Spanish technical diagram titled 'Pipelines aloChat'. Show 8 parallel pipelines with lanes: (1) Message Processing Pipeline, (2) Retry/DLQ Pipeline, (3) Infrastructure IaC Pipeline, (4) Build & Image Pipeline, (5) Knowledge Ingestion Pipeline, (6) Observability Pipeline, (7) Local Dev Pipeline, (8) Web Security Pipeline. For each lane include three columns: 'Donde esta', 'Como se hizo', 'Para que sirve'. Add concrete repo paths and AWS services. Add note: 'CI/CD automatizado aun no definido en repo; despliegue actual operativo/manual con CloudFormation + AWS CLI'." 
+"Create a Spanish technical diagram titled 'Pipelines aloChat'. Show 8 parallel pipelines with lanes: (1) Message Processing Pipeline, (2) Retry/DLQ Pipeline, (3) Infrastructure IaC Pipeline, (4) Build & Image Pipeline, (5) Knowledge Ingestion Pipeline, (6) Observability Pipeline, (7) Local Dev Pipeline, (8) Web Security Pipeline. For each lane include three columns: 'Donde esta', 'Como se hizo', 'Para que sirve'. Add concrete repo paths and AWS services. Add note: 'CI/CD base ya implementado con GitHub Actions + OIDC + ECR + CloudFormation deploy a dev; CI en pull_request/push master y CD Dev en push master/manual'." 

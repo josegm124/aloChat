@@ -264,7 +264,65 @@ Orden recomendado de despliegue documentado:
 8. actualizar runtime con endpoint real OpenSearch
 9. managed-observability
 
-## 10. Operacion local
+## 10. CI/CD y despliegue actual
+
+Workflows reales en repo:
+- `.github/workflows/ci.yml`
+- `.github/workflows/cd-dev.yml`
+
+### 10.1 CI
+Trigger:
+- `pull_request`
+- `push` a `master`
+
+Pasos principales:
+- `./gradlew test`
+- `./gradlew build -x test`
+
+Objetivo:
+- validar compilacion y contrato tecnico minimo antes de merge/deploy
+- hoy ya existe un test base de salud para `inbound-adapter`
+
+### 10.2 CD Dev
+Trigger:
+- `push` a `master`
+- `workflow_dispatch`
+
+Pasos principales:
+1. autenticacion AWS por GitHub OIDC
+2. login a ECR
+3. build/push de imagenes `inbound-adapter`, `processor`, `ai-orchestrator`, `outbound-dispatcher`
+4. `aws cloudformation deploy` sobre `infra/runtime.yaml`
+5. espera de estabilidad ECS
+6. impresion del `HttpApiUrl`
+
+### 10.3 Integracion GitHub -> AWS
+Configuracion operativa actual:
+- provider OIDC: `token.actions.githubusercontent.com`
+- role AWS: `github-actions-alochat-dev`
+- environment GitHub: `dev`
+- variables GitHub: `AWS_REGION`, `ECR_REGISTRY`, `AWS_ROLE_ARN`
+- secret GitHub: `TELEGRAM_BOT_TOKEN`
+
+Punto critico:
+- `cd-dev.yml` usa `environment: dev`
+- con eso, el `sub` del token OIDC deja de ser por rama y pasa a formato por environment
+- trust policy correcto:
+  - `repo:josegm124/aloChat:environment:dev`
+
+Si se configura el trust policy como:
+- `repo:josegm124/aloChat:ref:refs/heads/master`
+
+entonces falla el paso:
+- `aws-actions/configure-aws-credentials@v4`
+- error: `Not authorized to perform sts:AssumeRoleWithWebIdentity`
+
+### 10.4 Activacion del pipeline
+- `CI` corre automaticamente al abrir/actualizar PR o al empujar a `master`
+- `CD Dev` corre automaticamente al empujar a `master`
+- `CD Dev` tambien puede ejecutarse manualmente desde `GitHub -> Actions -> CD Dev -> Run workflow`
+
+## 11. Operacion local
 
 `local/compose.yaml` levanta:
 - Kafka KRaft (`19092` expuesto)
@@ -275,9 +333,9 @@ Orden recomendado de despliegue documentado:
 
 Objetivo: validar pipeline funcional y metricas antes/despues de despliegue cloud.
 
-## 11. Tooling operativo
+## 12. Tooling operativo
 
-### 11.1 Conocimiento (`tools/knowledge`)
+### 12.1 Conocimiento (`tools/knowledge`)
 - `ingest_storage.py`:
   - parsea inventario
   - genera documentos producto/oferta
@@ -286,20 +344,21 @@ Objetivo: validar pipeline funcional y metricas antes/despues de despliegue clou
 - `verify_count.py`: verifica conteo de docs por indice
 - `create_chat_memory_index.py`: crea mapping base para `chat_memory`
 
-### 11.2 Observabilidad (`tools/observability/collector`)
+### 12.2 Observabilidad (`tools/observability/collector`)
 - collector basado en `aws-otel-collector`
 - scrapea `/actuator/prometheus` de los 4 servicios
 - hace remote_write a AMP con `sigv4auth`
 
-### 11.3 MSK admin (`tools/msk-admin`)
+### 12.3 MSK admin (`tools/msk-admin`)
 - utilitario Java para crear topicos canonicos en MSK con IAM SASL
 
-## 12. Documentacion existente (por tema)
+## 13. Documentacion existente (por tema)
 
 `docs/` contiene guias segmentadas:
 - contratos inbound
 - arquitectura RAG/memoria
 - pipeline de conocimiento
+- GitHub Actions / CI-CD
 - secretos
 - tenancy
 - observabilidad managed
@@ -307,7 +366,7 @@ Objetivo: validar pipeline funcional y metricas antes/despues de despliegue clou
 
 `README.md` y `infra/README.md` cubren arquitectura/deployment, pero no estaban concentrados en un unico documento integral de carpeta.
 
-## 13. Estado tecnico actual y limites
+## 14. Estado tecnico actual y limites
 
 Implementado y operativo en diseño:
 - pipeline completo por eventos con retries y DLQ
@@ -315,13 +374,14 @@ Implementado y operativo en diseño:
 - AI con retrieval y memoria
 - auditoria durable y estado transitorio separado
 - observabilidad por Prometheus/Grafana + CloudWatch/AMP/AMG
+- CI/CD base con GitHub Actions + OIDC + deploy `dev`
 
 Limites actuales visibles en codigo:
 - dispatch Web y Meta en outbound aun como placeholder (no cliente final de entrega)
 - generacion AI principal aun heuristica/conservadora (Bedrock embeddings configurado para evolucion)
 - dependencia de parametrizacion/secretos para entorno cloud productivo
 
-## 14. Convenciones y decisiones de diseño
+## 15. Convenciones y decisiones de diseño
 
 Principios dominantes del repo:
 - separar payload externo por canal vs contrato interno canonico
