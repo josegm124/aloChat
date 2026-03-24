@@ -1,0 +1,30 @@
+[
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "alo"
+  },
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "SearchRuntimePrincipalArn",
+    "ParameterValue": "arn:aws:iam::668778694151:role/alo-dev-ecs-task-role"
+  },
+  {
+    "ParameterKey": "IngestionPrincipalArn",
+    "ParameterValue": "arn:aws:iam::668778694151:user/laloDev"
+  },
+  {
+    "ParameterKey": "SearchRuntimeRoleName",
+    "ParameterValue": "alo-dev-ecs-task-role"
+  },
+  {
+    "ParameterKey": "IngestionUserName",
+    "ParameterValue": "laloDev"
+  },
+  {
+    "ParameterKey": "CollectionType",
+    "ParameterValue": "VECTORSEARCH"
+  }
+]

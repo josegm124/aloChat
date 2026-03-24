@@ -1,0 +1,30 @@
+[
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "alo"
+  },
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "FoundationStackName",
+    "ParameterValue": "alochat-dev-foundation"
+  },
+  {
+    "ParameterKey": "KafkaVersion",
+    "ParameterValue": "3.6.0"
+  },
+  {
+    "ParameterKey": "BrokerNodeCount",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "BrokerInstanceType",
+    "ParameterValue": "kafka.t3.small"
+  },
+  {
+    "ParameterKey": "BrokerVolumeSize",
+    "ParameterValue": "100"
+  }
+]

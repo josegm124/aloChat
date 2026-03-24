@@ -1,0 +1,78 @@
+[
+  {
+    "ParameterKey": "ProjectName",
+    "ParameterValue": "alo"
+  },
+  {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "FoundationStackName",
+    "ParameterValue": "alochat-dev-foundation"
+  },
+  {
+    "ParameterKey": "DataStackName",
+    "ParameterValue": "alo-dev-data"
+  },
+  {
+    "ParameterKey": "SearchStackName",
+    "ParameterValue": "alo-dev-search"
+  },
+  {
+    "ParameterKey": "LogRetentionDays",
+    "ParameterValue": "14"
+  },
+  {
+    "ParameterKey": "AlbIngressCidr",
+    "ParameterValue": "0.0.0.0/0"
+  },
+  {
+    "ParameterKey": "NotificationFromAddress",
+    "ParameterValue": "conjguerrero@gmail.com"
+  },
+  {
+    "ParameterKey": "KafkaBootstrapServers",
+    "ParameterValue": "b-1.alodevmsk.xzlzfn.c2.kafka.us-east-1.amazonaws.com:9092,b-2.alodevmsk.xzlzfn.c2.kafka.us-east-1.amazonaws.com:9092"
+  },
+  {
+    "ParameterKey": "ServiceDesiredCount",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "IntakeImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-intake-service:20260324-041500"
+  },
+  {
+    "ParameterKey": "ProfileImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-profile-service:20260324-041500"
+  },
+  {
+    "ParameterKey": "DocumentImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-document-compliance-service:20260324-223500"
+  },
+  {
+    "ParameterKey": "DatasetImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-dataset-compliance-service:20260324-041500"
+  },
+  {
+    "ParameterKey": "OrchestratorImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-assessment-orchestrator:20260324-041500"
+  },
+  {
+    "ParameterKey": "ReportImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-report-service:20260324-235900"
+  },
+  {
+    "ParameterKey": "NotificationImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-notification-service:20260324-235900"
+  },
+  {
+    "ParameterKey": "RetryRouterImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-retry-router-service:20260324-041500"
+  },
+  {
+    "ParameterKey": "MskAdminImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-msk-admin:20260324-074500"
+  }
+]

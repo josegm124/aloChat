@@ -1,0 +1,61 @@
+name: alo-ci-cd
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compile modules
+        run: ./gradlew compileJava
+
+  deploy-dev:
+    if: github.event_name == 'push'
+    needs: ci
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      FOUNDATION_STACK_NAME: alochat-dev-foundation
+      RUNTIME_STACK_NAME: alo-dev-runtime
+      CLUSTER_NAME: alo-dev-cluster
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Set image tag
+        run: echo "IMAGE_TAG=${GITHUB_SHA::12}" >> "$GITHUB_ENV"
+      - name: Build and push service images
+        run: bash local/build-and-push-ecr.sh "$IMAGE_TAG"
+      - name: Build and push MSK admin image
+        run: bash local/build-and-push-msk-admin.sh "$IMAGE_TAG"
+      - name: Update runtime image parameters
+        run: python3 local/update-runtime-image-tags.py "$IMAGE_TAG"
+      - name: Validate templates
+        run: aws cloudformation validate-template --region "$AWS_REGION" --template-body file://infra/runtime.yaml
+      - name: Deploy runtime
+        run: aws cloudformation deploy --region "$AWS_REGION" --stack-name "$RUNTIME_STACK_NAME" --template-file infra/runtime.yaml --parameter-overrides file://infra/parameters/dev/runtime.json --capabilities CAPABILITY_NAMED_IAM
+      - name: Validate poison message to DLQ
+        run: bash local/validate-dlq.sh

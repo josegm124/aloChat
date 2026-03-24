@@ -13,3 +13,14 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = 'alo'
+
+include('libs:alo-domain-contracts')
+include('libs:alo-service-support')
+include('services:alo-intake-service')
+include('services:alo-profile-service')
+include('services:alo-document-compliance-service')
+include('services:alo-dataset-compliance-service')
+include('services:alo-assessment-orchestrator')
+include('services:alo-report-service')
+include('services:alo-notification-service')
+include('services:alo-retry-router-service')

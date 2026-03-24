@@ -1,0 +1,139 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: alo data stack - DynamoDB tables and S3 buckets for assessments
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: alo
+  EnvironmentName:
+    Type: String
+    Default: dev
+  EnableVersioning:
+    Type: String
+    AllowedValues: ['true', 'false']
+    Default: 'true'
+
+Conditions:
+  UseVersioning: !Equals [!Ref EnableVersioning, 'true']
+
+Resources:
+  AssessmentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${ProjectName}-assessments
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: assessmentId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: assessmentId
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-assessments
+
+  SubmissionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${ProjectName}-submissions
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: submissionId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: submissionId
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-submissions
+
+  IdempotencyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${ProjectName}-idempotency
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: idempotencyKey
+          AttributeType: S
+      KeySchema:
+        - AttributeName: idempotencyKey
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-idempotency
+
+  UploadsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${ProjectName}-${EnvironmentName}-uploads-${AWS::AccountId}-${AWS::Region}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration: !If
+        - UseVersioning
+        - Status: Enabled
+        - Status: Suspended
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-uploads
+
+  ReportsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${ProjectName}-${EnvironmentName}-reports-${AWS::AccountId}-${AWS::Region}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration: !If
+        - UseVersioning
+        - Status: Enabled
+        - Status: Suspended
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-reports
+
+Outputs:
+  AssessmentsTableName:
+    Value: !Ref AssessmentsTable
+    Export:
+      Name: !Sub ${AWS::StackName}-AssessmentsTableName
+  SubmissionsTableName:
+    Value: !Ref SubmissionsTable
+    Export:
+      Name: !Sub ${AWS::StackName}-SubmissionsTableName
+  IdempotencyTableName:
+    Value: !Ref IdempotencyTable
+    Export:
+      Name: !Sub ${AWS::StackName}-IdempotencyTableName
+  UploadsBucketName:
+    Value: !Ref UploadsBucket
+    Export:
+      Name: !Sub ${AWS::StackName}-UploadsBucketName
+  ReportsBucketName:
+    Value: !Ref ReportsBucket
+    Export:
+      Name: !Sub ${AWS::StackName}-ReportsBucketName

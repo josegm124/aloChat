@@ -1,0 +1,11 @@
+package com.alo.contracts.assessment;
+
+public enum CompliancePillar {
+    APPLICABILITY,
+    RISK_MANAGEMENT,
+    DATA_GOVERNANCE,
+    TECHNICAL_DOCUMENTATION,
+    TRANSPARENCY_HUMAN_OVERSIGHT,
+    ACCURACY_ROBUSTNESS,
+    CYBERSECURITY
+}

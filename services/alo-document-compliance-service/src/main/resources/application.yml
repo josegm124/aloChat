@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: alo-document-compliance-service
+  threads:
+    virtual:
+      enabled: true
+  kafka:
+    bootstrap-servers: ${ALO_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: alo-document-compliance-service
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "com.alo.contracts.events,com.alo.contracts.assessment"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+alo:
+  search:
+    enabled: ${ALO_SEARCH_ENABLED:true}
+    endpoint: ${ALO_SEARCH_ENDPOINT:}
+    region: ${ALO_SEARCH_REGION:${AWS_REGION:us-east-1}}
+    corpus-index: ${ALO_SEARCH_CORPUS_INDEX:regulatory_corpus}
+    max-results: ${ALO_SEARCH_MAX_RESULTS:5}
+    lexical-candidates: ${ALO_SEARCH_LEXICAL_CANDIDATES:8}
+    vector-candidates: ${ALO_SEARCH_VECTOR_CANDIDATES:8}
+    lexical-weight: ${ALO_SEARCH_LEXICAL_WEIGHT:0.45}
+    vector-weight: ${ALO_SEARCH_VECTOR_WEIGHT:0.55}
+    embeddings-enabled: ${ALO_SEARCH_EMBEDDINGS_ENABLED:true}
+    embedding-model-id: ${ALO_BEDROCK_EMBEDDING_MODEL_ID:amazon.titan-embed-text-v2:0}
+    embedding-dimensions: ${ALO_BEDROCK_EMBEDDING_DIMENSIONS:1024}
+    normalize-embeddings: ${ALO_BEDROCK_EMBEDDING_NORMALIZE:true}
+    bedrock-region: ${ALO_BEDROCK_REGION:${AWS_REGION:us-east-1}}
+  kafka:
+    resilience:
+      consumer:
+        max-attempts: ${ALO_KAFKA_RETRY_MAX_ATTEMPTS:3}
+        initial-interval-ms: ${ALO_KAFKA_RETRY_INITIAL_INTERVAL_MS:1000}
+        multiplier: ${ALO_KAFKA_RETRY_MULTIPLIER:2.0}
+        max-interval-ms: ${ALO_KAFKA_RETRY_MAX_INTERVAL_MS:10000}
+        dlq-topic: ${ALO_KAFKA_DLQ_TOPIC:alo.dlq}
+      producer:
+        circuit-breaker-name: ${ALO_KAFKA_CB_NAME:kafkaPublisher}
+        send-timeout-ms: ${ALO_KAFKA_PUBLISH_TIMEOUT_MS:5000}
+        open-state-wait-ms: ${ALO_KAFKA_CB_OPEN_WAIT_MS:10000}
+        failure-rate-threshold: ${ALO_KAFKA_CB_FAILURE_RATE_THRESHOLD:50}
+    topics:
+      assessment-profile-resolved: alo.assessment.profile.resolved
+      assessment-document-requested: alo.assessment.document.requested
+
+server:
+  port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

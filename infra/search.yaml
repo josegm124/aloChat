@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: alo search stack - OpenSearch Serverless collection and policies for regulatory RAG
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: alo
+  EnvironmentName:
+    Type: String
+    Default: dev
+  SearchRuntimePrincipalArn:
+    Type: String
+  IngestionPrincipalArn:
+    Type: String
+  SearchRuntimeRoleName:
+    Type: String
+  IngestionUserName:
+    Type: String
+  CollectionType:
+    Type: String
+    Default: VECTORSEARCH
+    AllowedValues:
+      - SEARCH
+      - VECTORSEARCH
+
+Resources:
+  SearchEncryptionPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-search-encryption
+      Type: encryption
+      Description: Encryption policy for alo search collection
+      Policy: !Sub >-
+        {"Rules":[{"ResourceType":"collection","Resource":["collection/${ProjectName}-${EnvironmentName}-search"]}],"AWSOwnedKey":true}
+
+  SearchNetworkPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-search-network
+      Type: network
+      Description: Public network policy for alo search collection
+      Policy: !Sub >-
+        [{"Description":"Allow public access to alo search collection and dashboards","Rules":[{"ResourceType":"collection","Resource":["collection/${ProjectName}-${EnvironmentName}-search"]},{"ResourceType":"dashboard","Resource":["collection/${ProjectName}-${EnvironmentName}-search"]}],"AllowFromPublic":true}]
+
+  SearchAccessPolicy:
+    Type: AWS::OpenSearchServerless::AccessPolicy
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-search-data
+      Type: data
+      Description: Data access for alo search collection
+      Policy: !Sub >-
+        [{"Description":"Allow ingestion and runtime access to alo search collection","Rules":[{"ResourceType":"collection","Resource":["collection/*"],"Permission":["aoss:CreateCollectionItems","aoss:DeleteCollectionItems","aoss:UpdateCollectionItems","aoss:DescribeCollectionItems"]},{"ResourceType":"index","Resource":["index/*/*"],"Permission":["aoss:CreateIndex","aoss:DeleteIndex","aoss:UpdateIndex","aoss:DescribeIndex","aoss:ReadDocument","aoss:WriteDocument"]}],"Principal":["${SearchRuntimePrincipalArn}","${IngestionPrincipalArn}"]}]
+
+  SearchCollection:
+    Type: AWS::OpenSearchServerless::Collection
+    DependsOn:
+      - SearchEncryptionPolicy
+      - SearchNetworkPolicy
+      - SearchAccessPolicy
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-search
+      Type: !Ref CollectionType
+      Description: Regulatory corpus and evidence retrieval for alo compliance MVP
+
+  SearchRuntimeApiAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${ProjectName}-${EnvironmentName}-search-runtime-api
+      Roles:
+        - !Ref SearchRuntimeRoleName
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - aoss:*
+              - aoss:APIAccessAll
+              - aoss:DashboardsAccessAll
+            Resource: '*'
+
+  SearchIngestionApiAccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${ProjectName}-${EnvironmentName}-search-ingestion-api
+      Users:
+        - !Ref IngestionUserName
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - aoss:*
+              - aoss:APIAccessAll
+              - aoss:DashboardsAccessAll
+            Resource: '*'
+
+Outputs:
+  SearchCollectionArn:
+    Value: !GetAtt SearchCollection.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-SearchCollectionArn
+  SearchCollectionId:
+    Value: !GetAtt SearchCollection.Id
+    Export:
+      Name: !Sub ${AWS::StackName}-SearchCollectionId
+  SearchCollectionName:
+    Value: !Ref SearchCollection
+    Export:
+      Name: !Sub ${AWS::StackName}-SearchCollectionName
+  SearchCollectionEndpoint:
+    Value: !GetAtt SearchCollection.CollectionEndpoint
+    Export:
+      Name: !Sub ${AWS::StackName}-SearchCollectionEndpoint
+  SearchDashboardEndpoint:
+    Value: !GetAtt SearchCollection.DashboardEndpoint
+    Export:
+      Name: !Sub ${AWS::StackName}-SearchDashboardEndpoint
