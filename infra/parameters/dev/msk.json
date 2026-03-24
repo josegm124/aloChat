@@ -1,22 +1,30 @@
 [
   {
     "ParameterKey": "ProjectName",
-    "ParameterValue": "alochat"
+    "ParameterValue": "alo"
   },
   {
     "ParameterKey": "EnvironmentName",
     "ParameterValue": "dev"
   },
   {
-    "ParameterKey": "VpcId",
-    "ParameterValue": "vpc-0b5c6bbfd8d1bb545"
+    "ParameterKey": "FoundationStackName",
+    "ParameterValue": "alochat-dev-foundation"
   },
   {
-    "ParameterKey": "PrivateSubnetIds",
-    "ParameterValue": "subnet-08f40467f493a7b53,subnet-0166467e5b6f3383c"
+    "ParameterKey": "KafkaVersion",
+    "ParameterValue": "3.6.0"
   },
   {
-    "ParameterKey": "KafkaClientSecurityGroupId",
-    "ParameterValue": "sg-00e9153989aa32434"
+    "ParameterKey": "BrokerNodeCount",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "BrokerInstanceType",
+    "ParameterValue": "kafka.t3.small"
+  },
+  {
+    "ParameterKey": "BrokerVolumeSize",
+    "ParameterValue": "100"
   }
 ]

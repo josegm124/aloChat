@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: alo-retry-router-service
+  threads:
+    virtual:
+      enabled: true
+  kafka:
+    bootstrap-servers: ${ALO_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: alo-retry-router-service
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "com.alo.contracts.events,com.alo.contracts.assessment,java.util"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+alo:
+  kafka:
+    resilience:
+      consumer:
+        max-attempts: ${ALO_KAFKA_RETRY_MAX_ATTEMPTS:3}
+        initial-interval-ms: ${ALO_KAFKA_RETRY_INITIAL_INTERVAL_MS:1000}
+        multiplier: ${ALO_KAFKA_RETRY_MULTIPLIER:2.0}
+        max-interval-ms: ${ALO_KAFKA_RETRY_MAX_INTERVAL_MS:10000}
+        dlq-topic: ${ALO_KAFKA_DLQ_TOPIC:alo.dlq}
+      producer:
+        circuit-breaker-name: ${ALO_KAFKA_CB_NAME:kafkaPublisher}
+        send-timeout-ms: ${ALO_KAFKA_PUBLISH_TIMEOUT_MS:5000}
+        open-state-wait-ms: ${ALO_KAFKA_CB_OPEN_WAIT_MS:10000}
+        failure-rate-threshold: ${ALO_KAFKA_CB_FAILURE_RATE_THRESHOLD:50}
+      retry-router:
+        short-delay-ms: ${ALO_KAFKA_RETRY_SHORT_DELAY_MS:5000}
+        long-delay-ms: ${ALO_KAFKA_RETRY_LONG_DELAY_MS:30000}
+    topics:
+      retry-short: alo.retry.short
+      retry-long: alo.retry.long
+
+server:
+  port: 8088
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

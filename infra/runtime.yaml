@@ -1,376 +1,84 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: aloChat runtime stack - ECS Fargate, ALB and API Gateway for MVP services
+Description: alo runtime stack - ECS cluster, ALB, WAF, Cloud Map and log groups
 
 Parameters:
   ProjectName:
     Type: String
-    Default: alochat
+    Default: alo
   EnvironmentName:
     Type: String
     Default: dev
-  VpcId:
-    Type: AWS::EC2::VPC::Id
-  PublicSubnetIds:
-    Type: CommaDelimitedList
-  PrivateSubnetIds:
-    Type: CommaDelimitedList
-  ApplicationSecurityGroupId:
-    Type: AWS::EC2::SecurityGroup::Id
+  FoundationStackName:
+    Type: String
+  DataStackName:
+    Type: String
+  SearchStackName:
+    Type: String
+  LogRetentionDays:
+    Type: Number
+    Default: 14
+  AlbIngressCidr:
+    Type: String
+    Default: 0.0.0.0/0
   KafkaBootstrapServers:
     Type: String
-  KafkaClusterArn:
+    Default: kafka-placeholder:9092
+  ServiceDesiredCount:
+    Type: Number
+    Default: 0
+  ServiceCpu:
     Type: String
-  RedisPrimaryEndpoint:
+    Default: '512'
+  ServiceMemory:
     Type: String
-  IdempotencyTableName:
+    Default: '1024'
+  IntakeImageUri:
     Type: String
-  MessageAuditTableName:
+    Default: public.ecr.aws/docker/library/eclipse-temurin:21-jre
+  ProfileImageUri:
     Type: String
-  ConversationMemoryTableName:
+    Default: public.ecr.aws/docker/library/eclipse-temurin:21-jre
+  DocumentImageUri:
     Type: String
-  CampaignHintTableName:
+    Default: public.ecr.aws/docker/library/eclipse-temurin:21-jre
+  DatasetImageUri:
     Type: String
-  InboundAdapterImageUri:
+    Default: public.ecr.aws/docker/library/eclipse-temurin:21-jre
+  OrchestratorImageUri:
     Type: String
-  ProcessorImageUri:
+    Default: public.ecr.aws/docker/library/eclipse-temurin:21-jre
+  ReportImageUri:
     Type: String
-  AiOrchestratorImageUri:
+    Default: public.ecr.aws/docker/library/eclipse-temurin:21-jre
+  NotificationImageUri:
     Type: String
-  OutboundDispatcherImageUri:
+    Default: public.ecr.aws/docker/library/eclipse-temurin:21-jre
+  RetryRouterImageUri:
     Type: String
-  WebTenantSecretPathPrefix:
+    Default: public.ecr.aws/docker/library/eclipse-temurin:21-jre
+  MskAdminImageUri:
     Type: String
-    Default: alochat/dev/tenants
-  WebTenantSecretSuffix:
-    Type: String
-    Default: ingress-signing-key
-  OpenSearchCollectionEndpoint:
+    Default: public.ecr.aws/docker/library/eclipse-temurin:21-jre
+  NotificationFromAddress:
     Type: String
     Default: ''
-  KnowledgeIndexName:
-    Type: String
-    Default: kb_corpus
-  MemoryIndexName:
-    Type: String
-    Default: chat_memory
-  BedrockEmbeddingModelId:
-    Type: String
-    Default: amazon.titan-embed-text-v2:0
-  InboundAdapterDesiredCount:
-    Type: Number
-    Default: 1
-  ProcessorDesiredCount:
-    Type: Number
-    Default: 1
-  AiOrchestratorDesiredCount:
-    Type: Number
-    Default: 1
-  OutboundDispatcherDesiredCount:
-    Type: Number
-    Default: 1
-  ContainerCpu:
-    Type: Number
-    Default: 512
-  ContainerMemory:
-    Type: Number
-    Default: 1024
-  AwsRegion:
-    Type: String
-    Default: us-east-1
-  ApiThrottleBurstLimit:
-    Type: Number
-    Default: 50
-  ApiThrottleRateLimit:
-    Type: Number
-    Default: 20
-  WafRateLimit:
-    Type: Number
-    Default: 2000
-
-  TelegramBotToken:
-    Type: String
-    NoEcho: true
 
 Resources:
-  RuntimeCluster:
+  Cluster:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: !Sub ${ProjectName}-${EnvironmentName}-cluster
       ClusterSettings:
         - Name: containerInsights
           Value: enabled
-
-  ServiceDiscoveryNamespace:
-    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
-    Properties:
-      Name: !Sub ${EnvironmentName}.${ProjectName}.local
-      Vpc: !Ref VpcId
-
-  LoadBalancerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Public load balancer security group
-      VpcId: !Ref VpcId
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          CidrIp: 0.0.0.0/0
-
-  ApplicationIngressFromAlb:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref ApplicationSecurityGroupId
-      IpProtocol: tcp
-      FromPort: 8080
-      ToPort: 8082
-      SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
-
-  ApplicationIngressFromAppServices:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref ApplicationSecurityGroupId
-      IpProtocol: tcp
-      FromPort: 8080
-      ToPort: 8083
-      SourceSecurityGroupId: !Ref ApplicationSecurityGroupId
-
-  InboundLoadBalancer:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      Name: !Sub ${ProjectName}-${EnvironmentName}-alb
-      Scheme: internet-facing
-      SecurityGroups:
-        - !Ref LoadBalancerSecurityGroup
-      Subnets: !Ref PublicSubnetIds
-      Type: application
-
-  InboundTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: !Sub ${ProjectName}-${EnvironmentName}-inbound
-      Port: 8080
-      Protocol: HTTP
-      TargetType: ip
-      VpcId: !Ref VpcId
-      HealthCheckEnabled: true
-      HealthCheckPath: /actuator/health
-      Matcher:
-        HttpCode: 200
-
-  InboundDiscoveryService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties:
-      Description: Internal discovery entry for inbound-adapter
-      DnsConfig:
-        DnsRecords:
-          - TTL: 10
-            Type: A
-      HealthCheckCustomConfig:
-        FailureThreshold: 1
-      Name: inbound-adapter
-      NamespaceId: !Ref ServiceDiscoveryNamespace
-
-  ProcessorDiscoveryService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties:
-      Description: Internal discovery entry for processor
-      DnsConfig:
-        DnsRecords:
-          - TTL: 10
-            Type: A
-      HealthCheckCustomConfig:
-        FailureThreshold: 1
-      Name: processor
-      NamespaceId: !Ref ServiceDiscoveryNamespace
-
-  AiDiscoveryService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties:
-      Description: Internal discovery entry for ai-orchestrator
-      DnsConfig:
-        DnsRecords:
-          - TTL: 10
-            Type: A
-      HealthCheckCustomConfig:
-        FailureThreshold: 1
-      Name: ai-orchestrator
-      NamespaceId: !Ref ServiceDiscoveryNamespace
-
-  OutboundDiscoveryService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties:
-      Description: Internal discovery entry for outbound-dispatcher
-      DnsConfig:
-        DnsRecords:
-          - TTL: 10
-            Type: A
-      HealthCheckCustomConfig:
-        FailureThreshold: 1
-      Name: outbound-dispatcher
-      NamespaceId: !Ref ServiceDiscoveryNamespace
-
-  InboundHttpListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      DefaultActions:
-        - Type: forward
-          TargetGroupArn: !Ref InboundTargetGroup
-      LoadBalancerArn: !Ref InboundLoadBalancer
-      Port: 80
-      Protocol: HTTP
-
-  HttpApi:
-    Type: AWS::ApiGatewayV2::Api
-    Properties:
-      Name: !Sub ${ProjectName}-${EnvironmentName}-http-api
-      ProtocolType: HTTP
-
-  HttpApiWebIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref HttpApi
-      IntegrationMethod: POST
-      IntegrationType: HTTP_PROXY
-      IntegrationUri: !Sub http://${InboundLoadBalancer.DNSName}/api/v1/inbound/web
-      PayloadFormatVersion: '1.0'
-
-  HttpApiTelegramIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref HttpApi
-      IntegrationMethod: POST
-      IntegrationType: HTTP_PROXY
-      IntegrationUri: !Sub http://${InboundLoadBalancer.DNSName}/api/v1/inbound/telegram
-      PayloadFormatVersion: '1.0'
-
-  HttpApiMetaIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref HttpApi
-      IntegrationMethod: POST
-      IntegrationType: HTTP_PROXY
-      IntegrationUri: !Sub http://${InboundLoadBalancer.DNSName}/api/v1/inbound/meta
-      PayloadFormatVersion: '1.0'
-
-  HttpApiWebStatusIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref HttpApi
-      IntegrationMethod: GET
-      IntegrationType: HTTP_PROXY
-      IntegrationUri: !Sub http://${InboundLoadBalancer.DNSName}/api/v1/web/messages/{messageId}
-      PayloadFormatVersion: '1.0'
-
-  HttpApiWebRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: POST /api/v1/inbound/web
-      Target: !Sub integrations/${HttpApiWebIntegration}
-
-  HttpApiTelegramRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: POST /api/v1/inbound/telegram
-      Target: !Sub integrations/${HttpApiTelegramIntegration}
-
-  HttpApiMetaRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: POST /api/v1/inbound/meta
-      Target: !Sub integrations/${HttpApiMetaIntegration}
-
-  HttpApiWebStatusRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: GET /api/v1/web/messages/{messageId}
-      Target: !Sub integrations/${HttpApiWebStatusIntegration}
-
-  HttpApiAccessLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/apigateway/${ProjectName}/${EnvironmentName}/http-api
-      RetentionInDays: 30
-
-  HttpApiStage:
-    Type: AWS::ApiGatewayV2::Stage
-    Properties:
-      ApiId: !Ref HttpApi
-      AutoDeploy: true
-      StageName: '$default'
-      DefaultRouteSettings:
-        DetailedMetricsEnabled: true
-        ThrottlingBurstLimit: !Ref ApiThrottleBurstLimit
-        ThrottlingRateLimit: !Ref ApiThrottleRateLimit
-      AccessLogSettings:
-        DestinationArn: !GetAtt HttpApiAccessLogGroup.Arn
-        Format: >-
-          {"requestId":"$context.requestId","ip":"$context.identity.sourceIp","routeKey":"$context.routeKey","status":"$context.status","requestTime":"$context.requestTime","integrationError":"$context.integrationErrorMessage"}
-
-  InboundWebAcl:
-    Type: AWS::WAFv2::WebACL
-    Properties:
-      Name: !Sub ${ProjectName}-${EnvironmentName}-inbound-waf
-      Scope: REGIONAL
-      DefaultAction:
-        Allow: {}
-      VisibilityConfig:
-        CloudWatchMetricsEnabled: true
-        MetricName: !Sub ${ProjectName}-${EnvironmentName}-inbound-waf
-        SampledRequestsEnabled: true
-      Rules:
-        - Name: AWSManagedCommon
-          Priority: 0
-          OverrideAction:
-            None: {}
-          Statement:
-            ManagedRuleGroupStatement:
-              Name: AWSManagedRulesCommonRuleSet
-              VendorName: AWS
-              ScopeDownStatement:
-                NotStatement:
-                  Statement:
-                    ByteMatchStatement:
-                      SearchString: /api/v1/inbound/telegram
-                      FieldToMatch:
-                        UriPath: {}
-                      PositionalConstraint: EXACTLY
-                      TextTransformations:
-                        - Priority: 0
-                          Type: NONE
-          VisibilityConfig:
-            CloudWatchMetricsEnabled: true
-            MetricName: managed-common
-            SampledRequestsEnabled: true
-        - Name: RateLimit
-          Priority: 1
-          Action:
-            Block: {}
-          Statement:
-            RateBasedStatement:
-              AggregateKeyType: IP
-              Limit: !Ref WafRateLimit
-          VisibilityConfig:
-            CloudWatchMetricsEnabled: true
-            MetricName: rate-limit
-            SampledRequestsEnabled: true
-
-  InboundWebAclAssociation:
-    Type: AWS::WAFv2::WebACLAssociation
-    Properties:
-      ResourceArn: !Ref InboundLoadBalancer
-      WebACLArn: !GetAtt InboundWebAcl.Arn
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-cluster
 
   TaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${ProjectName}-${EnvironmentName}-ecs-execution-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -380,11 +88,11 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
-      RoleName: !Sub ${ProjectName}-${EnvironmentName}-ecs-execution-role
 
-  InboundTaskRole:
+  TaskRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${ProjectName}-${EnvironmentName}-ecs-task-role
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -393,488 +101,1014 @@ Resources:
               Service: ecs-tasks.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: !Sub ${ProjectName}-${EnvironmentName}-inbound-access
+        - PolicyName: !Sub ${ProjectName}-${EnvironmentName}-task-data-access
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - dynamodb:PutItem
                   - dynamodb:GetItem
-                Resource:
-                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${MessageAuditTableName}
-              - Effect: Allow
-                Action:
-                  - secretsmanager:GetSecretValue
-                Resource:
-                  - !Sub arn:aws:secretsmanager:${AwsRegion}:${AWS::AccountId}:secret:${WebTenantSecretPathPrefix}/*
-              - Effect: Allow
-                Action:
-                  - kafka-cluster:Connect
-                  - kafka-cluster:DescribeCluster
-                  - kafka-cluster:DescribeTopic
-                  - kafka-cluster:DescribeTopicDynamicConfiguration
-                  - kafka-cluster:CreateTopic
-                  - kafka-cluster:AlterTopic
-                  - kafka-cluster:DescribeGroup
-                  - kafka-cluster:AlterGroup
-                  - kafka-cluster:CreateGroup
-                  - kafka-cluster:WriteData
-                  - kafka-cluster:ReadData
-                Resource: '*'
-      RoleName: !Sub ${ProjectName}-${EnvironmentName}-inbound-task-role
-
-  ProcessorTaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: !Sub ${ProjectName}-${EnvironmentName}-processor-dynamodb
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
                   - dynamodb:PutItem
-                Resource:
-                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${IdempotencyTableName}
-                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${MessageAuditTableName}
-              - Effect: Allow
-                Action:
-                  - kafka-cluster:Connect
-                  - kafka-cluster:DescribeCluster
-                  - kafka-cluster:DescribeTopic
-                  - kafka-cluster:DescribeTopicDynamicConfiguration
-                  - kafka-cluster:CreateTopic
-                  - kafka-cluster:AlterTopic
-                  - kafka-cluster:DescribeGroup
-                  - kafka-cluster:AlterGroup
-                  - kafka-cluster:CreateGroup
-                  - kafka-cluster:WriteData
-                  - kafka-cluster:ReadData
-                Resource: '*'
-      RoleName: !Sub ${ProjectName}-${EnvironmentName}-processor-task-role
-
-  AiTaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: !Sub ${ProjectName}-${EnvironmentName}-ai-dynamodb
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - dynamodb:PutItem
-                  - dynamodb:GetItem
-                  - dynamodb:Scan
                   - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
                 Resource:
-                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${MessageAuditTableName}
-                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${ConversationMemoryTableName}
-                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${CampaignHintTableName}
+                  - !Sub
+                    - arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${AssessmentsTableName}
+                    - AssessmentsTableName: !ImportValue
+                        Fn::Sub: ${DataStackName}-AssessmentsTableName
+                  - !Sub
+                    - arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${SubmissionsTableName}
+                    - SubmissionsTableName: !ImportValue
+                        Fn::Sub: ${DataStackName}-SubmissionsTableName
+                  - !Sub
+                    - arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${IdempotencyTableName}
+                    - IdempotencyTableName: !ImportValue
+                        Fn::Sub: ${DataStackName}-IdempotencyTableName
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub
+                    - arn:aws:s3:::${UploadsBucketName}
+                    - UploadsBucketName: !ImportValue
+                        Fn::Sub: ${DataStackName}-UploadsBucketName
+                  - !Sub
+                    - arn:aws:s3:::${UploadsBucketName}/*
+                    - UploadsBucketName: !ImportValue
+                        Fn::Sub: ${DataStackName}-UploadsBucketName
+                  - !Sub
+                    - arn:aws:s3:::${ReportsBucketName}
+                    - ReportsBucketName: !ImportValue
+                        Fn::Sub: ${DataStackName}-ReportsBucketName
+                  - !Sub
+                    - arn:aws:s3:::${ReportsBucketName}/*
+                    - ReportsBucketName: !ImportValue
+                        Fn::Sub: ${DataStackName}-ReportsBucketName
               - Effect: Allow
                 Action:
                   - bedrock:InvokeModel
-                  - bedrock:InvokeModelWithResponseStream
-                Resource: '*'
-              - Effect: Allow
-                Action:
-                  - aoss:APIAccessAll
-                Resource: '*'
-              - Effect: Allow
-                Action:
-                  - kafka-cluster:Connect
-                  - kafka-cluster:DescribeCluster
-                  - kafka-cluster:DescribeTopic
-                  - kafka-cluster:DescribeTopicDynamicConfiguration
-                  - kafka-cluster:CreateTopic
-                  - kafka-cluster:AlterTopic
-                  - kafka-cluster:DescribeGroup
-                  - kafka-cluster:AlterGroup
-                  - kafka-cluster:CreateGroup
-                  - kafka-cluster:WriteData
-                  - kafka-cluster:ReadData
-                Resource: '*'
-      RoleName: !Sub ${ProjectName}-${EnvironmentName}-ai-task-role
-
-  OutboundTaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: !Sub ${ProjectName}-${EnvironmentName}-outbound-dynamodb
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - dynamodb:PutItem
                 Resource:
-                  - !Sub arn:aws:dynamodb:${AwsRegion}:${AWS::AccountId}:table/${MessageAuditTableName}
+                  - !Sub arn:aws:bedrock:${AWS::Region}::foundation-model/amazon.titan-embed-text-v2:0
               - Effect: Allow
                 Action:
-                  - kafka-cluster:Connect
-                  - kafka-cluster:DescribeCluster
-                  - kafka-cluster:DescribeTopic
-                  - kafka-cluster:DescribeTopicDynamicConfiguration
-                  - kafka-cluster:CreateTopic
-                  - kafka-cluster:AlterTopic
-                  - kafka-cluster:DescribeGroup
-                  - kafka-cluster:AlterGroup
-                  - kafka-cluster:CreateGroup
-                  - kafka-cluster:WriteData
-                  - kafka-cluster:ReadData
+                  - ses:SendEmail
+                  - ses:SendRawEmail
                 Resource: '*'
-      RoleName: !Sub ${ProjectName}-${EnvironmentName}-outbound-task-role
 
-  InboundTaskDefinition:
+  PrivateNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}.local
+      Vpc: !ImportValue
+        Fn::Sub: ${FoundationStackName}-VpcId
+      Description: !Sub Private namespace for ${ProjectName} ${EnvironmentName}
+
+  AlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Ingress for alo ALB
+      VpcId: !ImportValue
+        Fn::Sub: ${FoundationStackName}-VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref AlbIngressCidr
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-alb-sg
+
+  AppIngressFromAlb:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !ImportValue
+        Fn::Sub: ${FoundationStackName}-ApplicationSecurityGroupId
+      IpProtocol: tcp
+      FromPort: 8080
+      ToPort: 8088
+      SourceSecurityGroupId: !Ref AlbSecurityGroup
+      Description: Allow ALB traffic to alo services
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-alb
+      Scheme: internet-facing
+      Type: application
+      SecurityGroups:
+        - !Ref AlbSecurityGroup
+      Subnets: !Split
+        - ','
+        - !ImportValue
+          Fn::Sub: ${FoundationStackName}-PublicSubnetIds
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-alb
+
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: fixed-response
+          FixedResponseConfig:
+            StatusCode: '404'
+            ContentType: text/plain
+            MessageBody: alo runtime base stack
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  IntakeTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-intake-tg
+      Port: 8080
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !ImportValue
+        Fn::Sub: ${FoundationStackName}-VpcId
+      HealthCheckEnabled: true
+      HealthCheckPath: /actuator/health
+      Matcher:
+        HttpCode: 200-399
+
+  IntakeListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref IntakeTargetGroup
+      Conditions:
+        - Field: path-pattern
+          PathPatternConfig:
+            Values:
+              - /api/v1/assessments*
+      ListenerArn: !Ref HttpListener
+      Priority: 10
+
+  DocumentTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-document-tg
+      Port: 8082
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !ImportValue
+        Fn::Sub: ${FoundationStackName}-VpcId
+      HealthCheckEnabled: true
+      HealthCheckPath: /actuator/health
+      Matcher:
+        HttpCode: 200-399
+
+  DocumentListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref DocumentTargetGroup
+      Conditions:
+        - Field: path-pattern
+          PathPatternConfig:
+            Values:
+              - /api/v1/document-compliance/analyze*
+      ListenerArn: !Ref HttpListener
+      Priority: 20
+
+  ReportTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-report-tg
+      Port: 8086
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !ImportValue
+        Fn::Sub: ${FoundationStackName}-VpcId
+      HealthCheckEnabled: true
+      HealthCheckPath: /actuator/health
+      Matcher:
+        HttpCode: 200-399
+
+  ReportListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref ReportTargetGroup
+      Conditions:
+        - Field: path-pattern
+          PathPatternConfig:
+            Values:
+              - /api/v1/reports*
+      ListenerArn: !Ref HttpListener
+      Priority: 30
+
+  NotificationTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-notification-tg
+      Port: 8087
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !ImportValue
+        Fn::Sub: ${FoundationStackName}-VpcId
+      HealthCheckEnabled: true
+      HealthCheckPath: /actuator/health
+      Matcher:
+        HttpCode: 200-399
+
+  NotificationListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref NotificationTargetGroup
+      Conditions:
+        - Field: path-pattern
+          PathPatternConfig:
+            Values:
+              - /api/v1/notifications*
+      ListenerArn: !Ref HttpListener
+      Priority: 40
+
+  WebAcl:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Sub ${ProjectName}-${EnvironmentName}-web-acl
+      Scope: REGIONAL
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub ${ProjectName}-${EnvironmentName}-web-acl
+        SampledRequestsEnabled: true
+      Rules:
+        - Name: AllowDocumentAnalysisUploads
+          Priority: 0
+          Action:
+            Allow: {}
+          Statement:
+            ByteMatchStatement:
+              SearchString: /api/v1/document-compliance/analyze
+              FieldToMatch:
+                UriPath: {}
+              PositionalConstraint: STARTS_WITH
+              TextTransformations:
+                - Priority: 0
+                  Type: NONE
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: !Sub ${ProjectName}-${EnvironmentName}-allow-document-analysis
+            SampledRequestsEnabled: true
+        - Name: AllowNotificationRequests
+          Priority: 1
+          Action:
+            Allow: {}
+          Statement:
+            ByteMatchStatement:
+              SearchString: /api/v1/notifications
+              FieldToMatch:
+                UriPath: {}
+              PositionalConstraint: STARTS_WITH
+              TextTransformations:
+                - Priority: 0
+                  Type: NONE
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: !Sub ${ProjectName}-${EnvironmentName}-allow-notifications
+            SampledRequestsEnabled: true
+        - Name: AWSManagedRulesCommonRuleSet
+          Priority: 10
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: true
+            MetricName: !Sub ${ProjectName}-${EnvironmentName}-common-rules
+            SampledRequestsEnabled: true
+
+  WebAclAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Properties:
+      ResourceArn: !Ref ApplicationLoadBalancer
+      WebACLArn: !GetAtt WebAcl.Arn
+
+  IntakeDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: alo-intake-service
+      NamespaceId: !Ref PrivateNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  ProfileDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: alo-profile-service
+      NamespaceId: !Ref PrivateNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  DocumentDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: alo-document-compliance-service
+      NamespaceId: !Ref PrivateNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  DatasetDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: alo-dataset-compliance-service
+      NamespaceId: !Ref PrivateNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  OrchestratorDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: alo-assessment-orchestrator
+      NamespaceId: !Ref PrivateNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  ReportDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: alo-report-service
+      NamespaceId: !Ref PrivateNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  NotificationDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: alo-notification-service
+      NamespaceId: !Ref PrivateNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  RetryRouterDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: alo-retry-router-service
+      NamespaceId: !Ref PrivateNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  IntakeLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/${ProjectName}/${EnvironmentName}/alo-intake-service
+      RetentionInDays: !Ref LogRetentionDays
+
+  ProfileLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/${ProjectName}/${EnvironmentName}/alo-profile-service
+      RetentionInDays: !Ref LogRetentionDays
+
+  DocumentLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/${ProjectName}/${EnvironmentName}/alo-document-compliance-service
+      RetentionInDays: !Ref LogRetentionDays
+
+  DatasetLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/${ProjectName}/${EnvironmentName}/alo-dataset-compliance-service
+      RetentionInDays: !Ref LogRetentionDays
+
+  OrchestratorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/${ProjectName}/${EnvironmentName}/alo-assessment-orchestrator
+      RetentionInDays: !Ref LogRetentionDays
+
+  ReportLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/${ProjectName}/${EnvironmentName}/alo-report-service
+      RetentionInDays: !Ref LogRetentionDays
+
+  NotificationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/${ProjectName}/${EnvironmentName}/alo-notification-service
+      RetentionInDays: !Ref LogRetentionDays
+
+  RetryRouterLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/${ProjectName}/${EnvironmentName}/alo-retry-router-service
+      RetentionInDays: !Ref LogRetentionDays
+
+  IntakeTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Cpu: !Ref ContainerCpu
-      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
-      Family: !Sub ${ProjectName}-${EnvironmentName}-inbound-adapter
-      Memory: !Ref ContainerMemory
+      Family: !Sub ${ProjectName}-${EnvironmentName}-alo-intake-service
+      Cpu: !Ref ServiceCpu
+      Memory: !Ref ServiceMemory
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-      TaskRoleArn: !GetAtt InboundTaskRole.Arn
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
       ContainerDefinitions:
-        - Name: inbound-adapter
-          Image: !Ref InboundAdapterImageUri
+        - Name: alo-intake-service
+          Image: !Ref IntakeImageUri
           Essential: true
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
           Environment:
-            - Name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: ALO_KAFKA_BOOTSTRAP_SERVERS
               Value: !Ref KafkaBootstrapServers
-            - Name: ALOCHAT_KAFKA_SECURITY_PROTOCOL
-              Value: SASL_SSL
-            - Name: ALOCHAT_KAFKA_SASL_MECHANISM
-              Value: AWS_MSK_IAM
-            - Name: ALOCHAT_KAFKA_SASL_JAAS_CONFIG
-              Value: software.amazon.msk.auth.iam.IAMLoginModule required;
-            - Name: ALOCHAT_KAFKA_SASL_CALLBACK_HANDLER
-              Value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
-            - Name: MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE
-              Value: health,info,prometheus
-            - Name: ALOCHAT_TOPICS_NORMALIZED
-              Value: messages.ingress.normalized
-            - Name: ALOCHAT_TOPICS_RETRY_SHORT
-              Value: messages.retry.short
-            - Name: ALOCHAT_TOPICS_RETRY_LONG
-              Value: messages.retry.long
-            - Name: ALOCHAT_TOPICS_DLQ
-              Value: messages.dlq
-            - Name: ALOCHAT_AWS_REGION
-              Value: !Ref AwsRegion
-            - Name: ALOCHAT_DYNAMODB_MESSAGE_AUDIT_TABLE
-              Value: !Ref MessageAuditTableName
-            - Name: ALOCHAT_WEB_SECRET_PREFIX
-              Value: !Ref WebTenantSecretPathPrefix
-            - Name: ALOCHAT_WEB_SECRET_SUFFIX
-              Value: !Ref WebTenantSecretSuffix
+            - Name: ALO_DYNAMODB_ASSESSMENTS_TABLE
+              Value: !ImportValue
+                Fn::Sub: ${DataStackName}-AssessmentsTableName
+            - Name: ALO_DYNAMODB_SUBMISSIONS_TABLE
+              Value: !ImportValue
+                Fn::Sub: ${DataStackName}-SubmissionsTableName
+            - Name: ALO_DYNAMODB_IDEMPOTENCY_TABLE
+              Value: !ImportValue
+                Fn::Sub: ${DataStackName}-IdempotencyTableName
+            - Name: ALO_DYNAMODB_REGION
+              Value: !Ref AWS::Region
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub /aws/alochat/${EnvironmentName}/inbound-adapter
-              awslogs-region: !Ref AwsRegion
+              awslogs-group: !Ref IntakeLogGroup
+              awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
 
-  ProcessorTaskDefinition:
+  ProfileTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Cpu: !Ref ContainerCpu
-      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
-      Family: !Sub ${ProjectName}-${EnvironmentName}-processor
-      Memory: !Ref ContainerMemory
+      Family: !Sub ${ProjectName}-${EnvironmentName}-alo-profile-service
+      Cpu: !Ref ServiceCpu
+      Memory: !Ref ServiceMemory
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-      TaskRoleArn: !GetAtt ProcessorTaskRole.Arn
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
       ContainerDefinitions:
-        - Name: processor
-          Image: !Ref ProcessorImageUri
+        - Name: alo-profile-service
+          Image: !Ref ProfileImageUri
           Essential: true
           PortMappings:
             - ContainerPort: 8081
               Protocol: tcp
           Environment:
-            - Name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: ALO_KAFKA_BOOTSTRAP_SERVERS
               Value: !Ref KafkaBootstrapServers
-            - Name: ALOCHAT_KAFKA_SECURITY_PROTOCOL
-              Value: SASL_SSL
-            - Name: ALOCHAT_KAFKA_SASL_MECHANISM
-              Value: AWS_MSK_IAM
-            - Name: ALOCHAT_KAFKA_SASL_JAAS_CONFIG
-              Value: software.amazon.msk.auth.iam.IAMLoginModule required;
-            - Name: ALOCHAT_KAFKA_SASL_CALLBACK_HANDLER
-              Value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
-            - Name: SPRING_DATA_REDIS_HOST
-              Value: !Ref RedisPrimaryEndpoint
-            - Name: ALOCHAT_DYNAMODB_IDEMPOTENCY_TABLE
-              Value: !Ref IdempotencyTableName
-            - Name: ALOCHAT_DYNAMODB_MESSAGE_AUDIT_TABLE
-              Value: !Ref MessageAuditTableName
-            - Name: ALOCHAT_TOPICS_NORMALIZED
-              Value: messages.ingress.normalized
-            - Name: ALOCHAT_TOPICS_AI
-              Value: messages.processing.ai
-            - Name: ALOCHAT_TOPICS_OUTBOUND
-              Value: messages.outbound.dispatch
-            - Name: ALOCHAT_TOPICS_RETRY_SHORT
-              Value: messages.retry.short
-            - Name: ALOCHAT_TOPICS_RETRY_LONG
-              Value: messages.retry.long
-            - Name: ALOCHAT_TOPICS_DLQ
-              Value: messages.dlq
-            - Name: ALOCHAT_AWS_REGION
-              Value: !Ref AwsRegion
+            - Name: ALO_SEARCH_ENDPOINT
+              Value: !ImportValue
+                Fn::Sub: ${SearchStackName}-SearchCollectionEndpoint
+            - Name: ALO_SEARCH_REGION
+              Value: !Ref AWS::Region
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub /aws/alochat/${EnvironmentName}/processor
-              awslogs-region: !Ref AwsRegion
+              awslogs-group: !Ref ProfileLogGroup
+              awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
 
-  AiTaskDefinition:
+  DocumentTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Cpu: !Ref ContainerCpu
-      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
-      Family: !Sub ${ProjectName}-${EnvironmentName}-ai-orchestrator
-      Memory: !Ref ContainerMemory
+      Family: !Sub ${ProjectName}-${EnvironmentName}-alo-document-compliance-service
+      Cpu: !Ref ServiceCpu
+      Memory: !Ref ServiceMemory
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
-      TaskRoleArn: !GetAtt AiTaskRole.Arn
-      ContainerDefinitions:
-        - Name: ai-orchestrator
-          Image: !Ref AiOrchestratorImageUri
-          Essential: true
-          PortMappings:
-            - ContainerPort: 8083
-              Protocol: tcp
-          Environment:
-            - Name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              Value: !Ref KafkaBootstrapServers
-            - Name: ALOCHAT_KAFKA_SECURITY_PROTOCOL
-              Value: SASL_SSL
-            - Name: ALOCHAT_KAFKA_SASL_MECHANISM
-              Value: AWS_MSK_IAM
-            - Name: ALOCHAT_KAFKA_SASL_JAAS_CONFIG
-              Value: software.amazon.msk.auth.iam.IAMLoginModule required;
-            - Name: ALOCHAT_KAFKA_SASL_CALLBACK_HANDLER
-              Value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
-            - Name: ALOCHAT_DYNAMODB_MESSAGE_AUDIT_TABLE
-              Value: !Ref MessageAuditTableName
-            - Name: ALOCHAT_DYNAMODB_CONVERSATION_MEMORY_TABLE
-              Value: !Ref ConversationMemoryTableName
-            - Name: ALOCHAT_DYNAMODB_CAMPAIGN_HINT_TABLE
-              Value: !Ref CampaignHintTableName
-            - Name: ALOCHAT_TOPICS_AI
-              Value: messages.processing.ai
-            - Name: ALOCHAT_TOPICS_OUTBOUND
-              Value: messages.outbound.dispatch
-            - Name: ALOCHAT_TOPICS_RETRY_SHORT
-              Value: messages.retry.short
-            - Name: ALOCHAT_TOPICS_RETRY_LONG
-              Value: messages.retry.long
-            - Name: ALOCHAT_TOPICS_DLQ
-              Value: messages.dlq
-            - Name: ALOCHAT_AWS_REGION
-              Value: !Ref AwsRegion
-            - Name: ALOCHAT_AI_OPENSEARCH_ENDPOINT
-              Value: !Ref OpenSearchCollectionEndpoint
-            - Name: ALOCHAT_AI_OPENSEARCH_KNOWLEDGE_INDEX
-              Value: !Ref KnowledgeIndexName
-            - Name: ALOCHAT_AI_OPENSEARCH_MEMORY_INDEX
-              Value: !Ref MemoryIndexName
-            - Name: ALOCHAT_AI_BEDROCK_EMBEDDING_MODEL_ID
-              Value: !Ref BedrockEmbeddingModelId
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Sub /aws/alochat/${EnvironmentName}/ai-orchestrator
-              awslogs-region: !Ref AwsRegion
-              awslogs-stream-prefix: ecs
-
-  OutboundTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Cpu: !Ref ContainerCpu
       ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
-      Family: !Sub ${ProjectName}-${EnvironmentName}-outbound-dispatcher
-      Memory: !Ref ContainerMemory
-      NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - FARGATE
-      TaskRoleArn: !GetAtt OutboundTaskRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
       ContainerDefinitions:
-        - Name: outbound-dispatcher
-          Image: !Ref OutboundDispatcherImageUri
+        - Name: alo-document-compliance-service
+          Image: !Ref DocumentImageUri
           Essential: true
           PortMappings:
             - ContainerPort: 8082
               Protocol: tcp
           Environment:
-            - Name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: ALO_KAFKA_BOOTSTRAP_SERVERS
               Value: !Ref KafkaBootstrapServers
-            - Name: ALOCHAT_KAFKA_SECURITY_PROTOCOL
-              Value: SASL_SSL
-            - Name: ALOCHAT_KAFKA_SASL_MECHANISM
-              Value: AWS_MSK_IAM
-            - Name: ALOCHAT_KAFKA_SASL_JAAS_CONFIG
-              Value: software.amazon.msk.auth.iam.IAMLoginModule required;
-            - Name: ALOCHAT_KAFKA_SASL_CALLBACK_HANDLER
-              Value: software.amazon.msk.auth.iam.IAMClientCallbackHandler
-            - Name: SPRING_DATA_REDIS_HOST
-              Value: !Ref RedisPrimaryEndpoint
-            - Name: ALOCHAT_DYNAMODB_MESSAGE_AUDIT_TABLE
-              Value: !Ref MessageAuditTableName
-            - Name: ALOCHAT_TOPICS_OUTBOUND
-              Value: messages.outbound.dispatch
-            - Name: ALOCHAT_TOPICS_RETRY_SHORT
-              Value: messages.retry.short
-            - Name: ALOCHAT_TOPICS_RETRY_LONG
-              Value: messages.retry.long
-            - Name: ALOCHAT_TOPICS_DLQ
-              Value: messages.dlq
-            - Name: ALOCHAT_AWS_REGION
-              Value: !Ref AwsRegion
-            - Name: ALOCHAT_TELEGRAM_BOT_TOKEN
-              Value: !Ref TelegramBotToken
+            - Name: ALO_SEARCH_ENDPOINT
+              Value: !ImportValue
+                Fn::Sub: ${SearchStackName}-SearchCollectionEndpoint
+            - Name: ALO_SEARCH_REGION
+              Value: !Ref AWS::Region
+            - Name: ALO_SEARCH_EMBEDDINGS_ENABLED
+              Value: 'true'
+            - Name: ALO_BEDROCK_REGION
+              Value: !Ref AWS::Region
+            - Name: ALO_BEDROCK_EMBEDDING_MODEL_ID
+              Value: amazon.titan-embed-text-v2:0
+            - Name: ALO_BEDROCK_EMBEDDING_DIMENSIONS
+              Value: '1024'
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Sub /aws/alochat/${EnvironmentName}/outbound-dispatcher
-              awslogs-region: !Ref AwsRegion
+              awslogs-group: !Ref DocumentLogGroup
+              awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: ecs
 
-  InboundService:
+  DatasetTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${ProjectName}-${EnvironmentName}-alo-dataset-compliance-service
+      Cpu: !Ref ServiceCpu
+      Memory: !Ref ServiceMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: alo-dataset-compliance-service
+          Image: !Ref DatasetImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8083
+              Protocol: tcp
+          Environment:
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: ALO_KAFKA_BOOTSTRAP_SERVERS
+              Value: !Ref KafkaBootstrapServers
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref DatasetLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  OrchestratorTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${ProjectName}-${EnvironmentName}-alo-assessment-orchestrator
+      Cpu: !Ref ServiceCpu
+      Memory: !Ref ServiceMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: alo-assessment-orchestrator
+          Image: !Ref OrchestratorImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8085
+              Protocol: tcp
+          Environment:
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: ALO_KAFKA_BOOTSTRAP_SERVERS
+              Value: !Ref KafkaBootstrapServers
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref OrchestratorLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  ReportTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${ProjectName}-${EnvironmentName}-alo-report-service
+      Cpu: !Ref ServiceCpu
+      Memory: !Ref ServiceMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: alo-report-service
+          Image: !Ref ReportImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8086
+              Protocol: tcp
+          Environment:
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: ALO_KAFKA_BOOTSTRAP_SERVERS
+              Value: !Ref KafkaBootstrapServers
+            - Name: ALO_REPORTS_BUCKET
+              Value: !ImportValue
+                Fn::Sub: ${DataStackName}-ReportsBucketName
+            - Name: ALO_PUBLIC_BASE_URL
+              Value: !Sub http://${ApplicationLoadBalancer.DNSName}
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref ReportLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  NotificationTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${ProjectName}-${EnvironmentName}-alo-notification-service
+      Cpu: !Ref ServiceCpu
+      Memory: !Ref ServiceMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: alo-notification-service
+          Image: !Ref NotificationImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8087
+              Protocol: tcp
+          Environment:
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: ALO_KAFKA_BOOTSTRAP_SERVERS
+              Value: !Ref KafkaBootstrapServers
+            - Name: ALO_NOTIFICATION_FROM_ADDRESS
+              Value: !Ref NotificationFromAddress
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref NotificationLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  RetryRouterTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${ProjectName}-${EnvironmentName}-alo-retry-router-service
+      Cpu: !Ref ServiceCpu
+      Memory: !Ref ServiceMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: alo-retry-router-service
+          Image: !Ref RetryRouterImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8088
+              Protocol: tcp
+          Environment:
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: ALO_KAFKA_BOOTSTRAP_SERVERS
+              Value: !Ref KafkaBootstrapServers
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref RetryRouterLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  MskAdminTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${ProjectName}-${EnvironmentName}-alo-msk-admin
+      Cpu: !Ref ServiceCpu
+      Memory: !Ref ServiceMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: alo-msk-admin
+          Image: !Ref MskAdminImageUri
+          Essential: true
+          EntryPoint:
+            - /bin/bash
+            - -lc
+          Command:
+            - echo ready && sleep 1
+          Environment:
+            - Name: AWS_REGION
+              Value: !Ref AWS::Region
+            - Name: ALO_KAFKA_BOOTSTRAP_SERVERS
+              Value: !Ref KafkaBootstrapServers
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Sub /aws/${ProjectName}/${EnvironmentName}/alo-msk-admin
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  IntakeService:
     Type: AWS::ECS::Service
     DependsOn:
-      - InboundHttpListener
+      - IntakeListenerRule
     Properties:
-      Cluster: !Ref RuntimeCluster
-      DesiredCount: !Ref InboundAdapterDesiredCount
+      ServiceName: alo-intake-service
+      Cluster: !Ref Cluster
+      DesiredCount: !Ref ServiceDesiredCount
       EnableExecuteCommand: true
       LaunchType: FARGATE
+      PlatformVersion: LATEST
+      TaskDefinition: !Ref IntakeTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-ApplicationSecurityGroupId
+          Subnets: !Split
+            - ','
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-PrivateSubnetIds
       LoadBalancers:
-        - ContainerName: inbound-adapter
+        - ContainerName: alo-intake-service
           ContainerPort: 8080
-          TargetGroupArn: !Ref InboundTargetGroup
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
-          SecurityGroups:
-            - !Ref ApplicationSecurityGroupId
-          Subnets: !Ref PrivateSubnetIds
+          TargetGroupArn: !Ref IntakeTargetGroup
       ServiceRegistries:
-        - RegistryArn: !GetAtt InboundDiscoveryService.Arn
-          ContainerName: inbound-adapter
-      ServiceName: !Sub ${ProjectName}-${EnvironmentName}-inbound-adapter
-      TaskDefinition: !Ref InboundTaskDefinition
+        - RegistryArn: !GetAtt IntakeDiscoveryService.Arn
 
-  ProcessorService:
+  ProfileService:
     Type: AWS::ECS::Service
     Properties:
-      Cluster: !Ref RuntimeCluster
-      DesiredCount: !Ref ProcessorDesiredCount
+      ServiceName: alo-profile-service
+      Cluster: !Ref Cluster
+      DesiredCount: !Ref ServiceDesiredCount
       EnableExecuteCommand: true
       LaunchType: FARGATE
+      PlatformVersion: LATEST
+      TaskDefinition: !Ref ProfileTaskDefinition
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
           SecurityGroups:
-            - !Ref ApplicationSecurityGroupId
-          Subnets: !Ref PrivateSubnetIds
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-ApplicationSecurityGroupId
+          Subnets: !Split
+            - ','
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-PrivateSubnetIds
       ServiceRegistries:
-        - RegistryArn: !GetAtt ProcessorDiscoveryService.Arn
-          ContainerName: processor
-      ServiceName: !Sub ${ProjectName}-${EnvironmentName}-processor
-      TaskDefinition: !Ref ProcessorTaskDefinition
+        - RegistryArn: !GetAtt ProfileDiscoveryService.Arn
 
-  AiService:
+  DocumentService:
     Type: AWS::ECS::Service
     Properties:
-      Cluster: !Ref RuntimeCluster
-      DesiredCount: !Ref AiOrchestratorDesiredCount
+      ServiceName: alo-document-compliance-service
+      Cluster: !Ref Cluster
+      DesiredCount: !Ref ServiceDesiredCount
       EnableExecuteCommand: true
       LaunchType: FARGATE
+      PlatformVersion: LATEST
+      TaskDefinition: !Ref DocumentTaskDefinition
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
           SecurityGroups:
-            - !Ref ApplicationSecurityGroupId
-          Subnets: !Ref PrivateSubnetIds
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-ApplicationSecurityGroupId
+          Subnets: !Split
+            - ','
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-PrivateSubnetIds
+      LoadBalancers:
+        - ContainerName: alo-document-compliance-service
+          ContainerPort: 8082
+          TargetGroupArn: !Ref DocumentTargetGroup
       ServiceRegistries:
-        - RegistryArn: !GetAtt AiDiscoveryService.Arn
-          ContainerName: ai-orchestrator
-      ServiceName: !Sub ${ProjectName}-${EnvironmentName}-ai-orchestrator
-      TaskDefinition: !Ref AiTaskDefinition
+        - RegistryArn: !GetAtt DocumentDiscoveryService.Arn
 
-  OutboundService:
+  DatasetService:
     Type: AWS::ECS::Service
     Properties:
-      Cluster: !Ref RuntimeCluster
-      DesiredCount: !Ref OutboundDispatcherDesiredCount
+      ServiceName: alo-dataset-compliance-service
+      Cluster: !Ref Cluster
+      DesiredCount: !Ref ServiceDesiredCount
       EnableExecuteCommand: true
       LaunchType: FARGATE
+      PlatformVersion: LATEST
+      TaskDefinition: !Ref DatasetTaskDefinition
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
           SecurityGroups:
-            - !Ref ApplicationSecurityGroupId
-          Subnets: !Ref PrivateSubnetIds
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-ApplicationSecurityGroupId
+          Subnets: !Split
+            - ','
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-PrivateSubnetIds
       ServiceRegistries:
-        - RegistryArn: !GetAtt OutboundDiscoveryService.Arn
-          ContainerName: outbound-dispatcher
-      ServiceName: !Sub ${ProjectName}-${EnvironmentName}-outbound-dispatcher
-      TaskDefinition: !Ref OutboundTaskDefinition
+        - RegistryArn: !GetAtt DatasetDiscoveryService.Arn
+
+  OrchestratorService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: alo-assessment-orchestrator
+      Cluster: !Ref Cluster
+      DesiredCount: !Ref ServiceDesiredCount
+      EnableExecuteCommand: true
+      LaunchType: FARGATE
+      PlatformVersion: LATEST
+      TaskDefinition: !Ref OrchestratorTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-ApplicationSecurityGroupId
+          Subnets: !Split
+            - ','
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-PrivateSubnetIds
+      ServiceRegistries:
+        - RegistryArn: !GetAtt OrchestratorDiscoveryService.Arn
+
+  ReportService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: alo-report-service
+      Cluster: !Ref Cluster
+      DesiredCount: !Ref ServiceDesiredCount
+      EnableExecuteCommand: true
+      LaunchType: FARGATE
+      PlatformVersion: LATEST
+      TaskDefinition: !Ref ReportTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-ApplicationSecurityGroupId
+          Subnets: !Split
+            - ','
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-PrivateSubnetIds
+      ServiceRegistries:
+        - RegistryArn: !GetAtt ReportDiscoveryService.Arn
+      LoadBalancers:
+        - ContainerName: alo-report-service
+          ContainerPort: 8086
+          TargetGroupArn: !Ref ReportTargetGroup
+
+  NotificationService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: alo-notification-service
+      Cluster: !Ref Cluster
+      DesiredCount: !Ref ServiceDesiredCount
+      EnableExecuteCommand: true
+      LaunchType: FARGATE
+      PlatformVersion: LATEST
+      TaskDefinition: !Ref NotificationTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-ApplicationSecurityGroupId
+          Subnets: !Split
+            - ','
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-PrivateSubnetIds
+      ServiceRegistries:
+        - RegistryArn: !GetAtt NotificationDiscoveryService.Arn
+      LoadBalancers:
+        - ContainerName: alo-notification-service
+          ContainerPort: 8087
+          TargetGroupArn: !Ref NotificationTargetGroup
+
+  RetryRouterService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: alo-retry-router-service
+      Cluster: !Ref Cluster
+      DesiredCount: !Ref ServiceDesiredCount
+      EnableExecuteCommand: true
+      LaunchType: FARGATE
+      PlatformVersion: LATEST
+      TaskDefinition: !Ref RetryRouterTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-ApplicationSecurityGroupId
+          Subnets: !Split
+            - ','
+            - !ImportValue
+              Fn::Sub: ${FoundationStackName}-PrivateSubnetIds
+      ServiceRegistries:
+        - RegistryArn: !GetAtt RetryRouterDiscoveryService.Arn
 
 Outputs:
   ClusterName:
-    Value: !Ref RuntimeCluster
-  HttpApiId:
-    Value: !Ref HttpApi
-  HttpApiUrl:
-    Value: !GetAtt HttpApi.ApiEndpoint
-  LoadBalancerDnsName:
-    Value: !GetAtt InboundLoadBalancer.DNSName
-  ServiceDiscoveryNamespaceId:
-    Value: !Ref ServiceDiscoveryNamespace
-  ServiceDiscoveryNamespaceName:
-    Value: !Sub ${EnvironmentName}.${ProjectName}.local
-  InboundServiceName:
-    Value: !Ref InboundService
-  ProcessorServiceName:
-    Value: !Ref ProcessorService
-  AiServiceName:
-    Value: !Ref AiService
-  AiTaskRoleArn:
-    Value: !GetAtt AiTaskRole.Arn
-  OutboundServiceName:
-    Value: !Ref OutboundService
-  OpenSearchCollectionEndpoint:
-    Value: !Ref OpenSearchCollectionEndpoint
+    Value: !Ref Cluster
+    Export:
+      Name: !Sub ${AWS::StackName}-ClusterName
+  ClusterArn:
+    Value: !GetAtt Cluster.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-ClusterArn
+  TaskExecutionRoleArn:
+    Value: !GetAtt TaskExecutionRole.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-TaskExecutionRoleArn
+  TaskRoleArn:
+    Value: !GetAtt TaskRole.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-TaskRoleArn
+  NamespaceId:
+    Value: !Ref PrivateNamespace
+    Export:
+      Name: !Sub ${AWS::StackName}-NamespaceId
+  NamespaceName:
+    Value: !Sub ${ProjectName}-${EnvironmentName}.local
+    Export:
+      Name: !Sub ${AWS::StackName}-NamespaceName
+  AlbArn:
+    Value: !Ref ApplicationLoadBalancer
+    Export:
+      Name: !Sub ${AWS::StackName}-AlbArn
+  AlbDnsName:
+    Value: !GetAtt ApplicationLoadBalancer.DNSName
+    Export:
+      Name: !Sub ${AWS::StackName}-AlbDnsName
+  WebAclArn:
+    Value: !GetAtt WebAcl.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-WebAclArn
+  IntakeTargetGroupArn:
+    Value: !Ref IntakeTargetGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-IntakeTargetGroupArn
+  DocumentTargetGroupArn:
+    Value: !Ref DocumentTargetGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-DocumentTargetGroupArn
+  MskAdminTaskDefinitionArn:
+    Value: !Ref MskAdminTaskDefinition
+    Export:
+      Name: !Sub ${AWS::StackName}-MskAdminTaskDefinitionArn

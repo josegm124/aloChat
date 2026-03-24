@@ -1,114 +1,78 @@
 [
   {
     "ParameterKey": "ProjectName",
-    "ParameterValue": "alochat"
+    "ParameterValue": "alo"
   },
   {
     "ParameterKey": "EnvironmentName",
     "ParameterValue": "dev"
   },
   {
-    "ParameterKey": "VpcId",
-    "ParameterValue": "vpc-0b5c6bbfd8d1bb545"
+    "ParameterKey": "FoundationStackName",
+    "ParameterValue": "alochat-dev-foundation"
   },
   {
-    "ParameterKey": "PublicSubnetIds",
-    "ParameterValue": "subnet-0718131cc15085bb6,subnet-0399b024408c0dc7f"
+    "ParameterKey": "DataStackName",
+    "ParameterValue": "alo-dev-data"
   },
   {
-    "ParameterKey": "PrivateSubnetIds",
-    "ParameterValue": "subnet-08f40467f493a7b53,subnet-0166467e5b6f3383c"
+    "ParameterKey": "SearchStackName",
+    "ParameterValue": "alo-dev-search"
   },
   {
-    "ParameterKey": "ApplicationSecurityGroupId",
-    "ParameterValue": "sg-05d9d5e5312eb43d1"
+    "ParameterKey": "LogRetentionDays",
+    "ParameterValue": "14"
+  },
+  {
+    "ParameterKey": "AlbIngressCidr",
+    "ParameterValue": "0.0.0.0/0"
+  },
+  {
+    "ParameterKey": "NotificationFromAddress",
+    "ParameterValue": "conjguerrero@gmail.com"
   },
   {
     "ParameterKey": "KafkaBootstrapServers",
-    "ParameterValue": "boot-lqayufz1.c1.kafka-serverless.us-east-1.amazonaws.com:9098"
+    "ParameterValue": "b-1.alodevmsk.xzlzfn.c2.kafka.us-east-1.amazonaws.com:9092,b-2.alodevmsk.xzlzfn.c2.kafka.us-east-1.amazonaws.com:9092"
   },
   {
-    "ParameterKey": "KafkaClusterArn",
-    "ParameterValue": "arn:aws:kafka:us-east-1:668778694151:cluster/alochat-dev-msk/ca2ff9fd-70ec-4084-88fe-9e4c09709296-s1"
+    "ParameterKey": "ServiceDesiredCount",
+    "ParameterValue": "1"
   },
   {
-    "ParameterKey": "RedisPrimaryEndpoint",
-    "ParameterValue": "master.alochat-dev-redis.ohicgm.use1.cache.amazonaws.com"
+    "ParameterKey": "IntakeImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-intake-service:20260324-041500"
   },
   {
-    "ParameterKey": "IdempotencyTableName",
-    "ParameterValue": "alochat-dev-idempotency"
+    "ParameterKey": "ProfileImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-profile-service:20260324-041500"
   },
   {
-    "ParameterKey": "MessageAuditTableName",
-    "ParameterValue": "alochat-dev-message-audit"
+    "ParameterKey": "DocumentImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-document-compliance-service:20260324-223500"
   },
   {
-    "ParameterKey": "ConversationMemoryTableName",
-    "ParameterValue": "alochat-dev-conversation-memory"
+    "ParameterKey": "DatasetImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-dataset-compliance-service:20260324-041500"
   },
   {
-    "ParameterKey": "CampaignHintTableName",
-    "ParameterValue": "alochat-dev-campaign-hints"
+    "ParameterKey": "OrchestratorImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-assessment-orchestrator:20260324-041500"
   },
   {
-    "ParameterKey": "InboundAdapterImageUri",
-    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alochat/dev/inbound-adapter@sha256:78249b85f6af78872ec6299ae81f637413239f7f060345ca7713be5fa60f9925"
+    "ParameterKey": "ReportImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-report-service:20260324-235900"
   },
   {
-    "ParameterKey": "ProcessorImageUri",
-    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alochat/dev/processor@sha256:d6cae3fbf2e7d8745dcd907e7eae5c899e41cd072aaca69aafd34a2032525a57"
+    "ParameterKey": "NotificationImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-notification-service:20260324-235900"
   },
   {
-    "ParameterKey": "AiOrchestratorImageUri",
-    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alochat/dev/ai-orchestrator@sha256:771df36eac218d5c7aeac27ab2824cf208c36cb4361fc7aecba80dc5ca7d6241"
+    "ParameterKey": "RetryRouterImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-retry-router-service:20260324-041500"
   },
   {
-    "ParameterKey": "OutboundDispatcherImageUri",
-    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alochat/dev/outbound-dispatcher:latest"
-  },
-  {
-    "ParameterKey": "WebTenantSecretPathPrefix",
-    "ParameterValue": "alochat/dev/tenants"
-  },
-  {
-    "ParameterKey": "WebTenantSecretSuffix",
-    "ParameterValue": "ingress-signing-key"
-  },
-  {
-    "ParameterKey": "OpenSearchCollectionEndpoint",
-    "ParameterValue": "https://1ta56cm25m7q4g4e4oxd.us-east-1.aoss.amazonaws.com"
-  },
-  {
-    "ParameterKey": "KnowledgeIndexName",
-    "ParameterValue": "kb_corpus"
-  },
-  {
-    "ParameterKey": "MemoryIndexName",
-    "ParameterValue": "chat_memory"
-  },
-  {
-    "ParameterKey": "BedrockEmbeddingModelId",
-    "ParameterValue": "amazon.titan-embed-text-v2:0"
-  },
-  {
-    "ParameterKey": "ApiThrottleBurstLimit",
-    "ParameterValue": "50"
-  },
-  {
-    "ParameterKey": "ApiThrottleRateLimit",
-    "ParameterValue": "20"
-  },
-  {
-    "ParameterKey": "WafRateLimit",
-    "ParameterValue": "2000"
-  },
-  {
-    "ParameterKey": "TelegramBotToken",
-    "ParameterValue": "REEMPLAZAR_CON_TOKEN_TELEGRAM"
-  },
-  {
-    "ParameterKey": "AwsRegion",
-    "ParameterValue": "us-east-1"
+    "ParameterKey": "MskAdminImageUri",
+    "ParameterValue": "668778694151.dkr.ecr.us-east-1.amazonaws.com/alo/dev/alo-msk-admin:20260324-074500"
   }
 ]

@@ -1,30 +1,64 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: aloChat data stack - DynamoDB, ElastiCache Redis and raw payload bucket
+Description: alo data stack - DynamoDB tables and S3 buckets for assessments
 
 Parameters:
   ProjectName:
     Type: String
-    Default: alochat
+    Default: alo
   EnvironmentName:
     Type: String
     Default: dev
-  PrivateSubnetIds:
-    Type: CommaDelimitedList
-    Description: Private subnets created by foundation stack
-  RedisSecurityGroupId:
-    Type: AWS::EC2::SecurityGroup::Id
-    Description: Redis security group created by foundation stack
-  RedisNodeType:
+  EnableVersioning:
     Type: String
-    Default: cache.t4g.small
-  RawPayloadExpirationDays:
-    Type: Number
-    Default: 7
+    AllowedValues: ['true', 'false']
+    Default: 'true'
+
+Conditions:
+  UseVersioning: !Equals [!Ref EnableVersioning, 'true']
 
 Resources:
+  AssessmentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${ProjectName}-assessments
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: assessmentId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: assessmentId
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-assessments
+
+  SubmissionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${ProjectName}-submissions
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: submissionId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: submissionId
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-submissions
+
   IdempotencyTable:
     Type: AWS::DynamoDB::Table
     Properties:
+      TableName: !Sub ${ProjectName}-idempotency
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: idempotencyKey
@@ -36,87 +70,14 @@ Resources:
         PointInTimeRecoveryEnabled: true
       SSESpecification:
         SSEEnabled: true
-      TableName: !Sub ${ProjectName}-${EnvironmentName}-idempotency
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-idempotency
 
-  MessageAuditTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: messageId
-          AttributeType: S
-        - AttributeName: conversationId
-          AttributeType: S
-      KeySchema:
-        - AttributeName: messageId
-          KeyType: HASH
-      GlobalSecondaryIndexes:
-        - IndexName: ConversationIdIndex
-          KeySchema:
-            - AttributeName: conversationId
-              KeyType: HASH
-          Projection:
-            ProjectionType: ALL
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: true
-      SSESpecification:
-        SSEEnabled: true
-      TableName: !Sub ${ProjectName}-${EnvironmentName}-message-audit
-
-  ConversationMemoryTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: memoryKey
-          AttributeType: S
-        - AttributeName: userId
-          AttributeType: S
-      KeySchema:
-        - AttributeName: memoryKey
-          KeyType: HASH
-      GlobalSecondaryIndexes:
-        - IndexName: UserIdIndex
-          KeySchema:
-            - AttributeName: userId
-              KeyType: HASH
-          Projection:
-            ProjectionType: ALL
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: true
-      SSESpecification:
-        SSEEnabled: true
-      TableName: !Sub ${ProjectName}-${EnvironmentName}-conversation-memory
-
-  CampaignHintTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: hintId
-          AttributeType: S
-        - AttributeName: memoryKey
-          AttributeType: S
-      KeySchema:
-        - AttributeName: hintId
-          KeyType: HASH
-      GlobalSecondaryIndexes:
-        - IndexName: MemoryKeyIndex
-          KeySchema:
-            - AttributeName: memoryKey
-              KeyType: HASH
-          Projection:
-            ProjectionType: ALL
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: true
-      SSESpecification:
-        SSEEnabled: true
-      TableName: !Sub ${ProjectName}-${EnvironmentName}-campaign-hints
-
-  RawPayloadBucket:
+  UploadsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${ProjectName}-${EnvironmentName}-raw-payloads-${AWS::AccountId}
+      BucketName: !Sub ${ProjectName}-${EnvironmentName}-uploads-${AWS::AccountId}-${AWS::Region}
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -126,65 +87,53 @@ Resources:
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
-      LifecycleConfiguration:
-        Rules:
-          - Id: ExpireRawPayloads
-            Status: Enabled
-            ExpirationInDays: !Ref RawPayloadExpirationDays
-      VersioningConfiguration:
-        Status: Enabled
+      VersioningConfiguration: !If
+        - UseVersioning
+        - Status: Enabled
+        - Status: Suspended
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-uploads
 
-  RedisSubnetGroup:
-    Type: AWS::ElastiCache::SubnetGroup
+  ReportsBucket:
+    Type: AWS::S3::Bucket
     Properties:
-      CacheSubnetGroupName: !Sub ${ProjectName}-${EnvironmentName}-redis-subnets
-      Description: Redis subnets for aloChat
-      SubnetIds: !Ref PrivateSubnetIds
-
-  RedisReplicationGroup:
-    Type: AWS::ElastiCache::ReplicationGroup
-    Properties:
-      AtRestEncryptionEnabled: true
-      AutoMinorVersionUpgrade: true
-      CacheNodeType: !Ref RedisNodeType
-      CacheSubnetGroupName: !Ref RedisSubnetGroup
-      Engine: redis
-      EngineVersion: '7.1'
-      MultiAZEnabled: false
-      NumNodeGroups: 1
-      ReplicasPerNodeGroup: 0
-      ReplicationGroupDescription: !Sub ${ProjectName}-${EnvironmentName} conversation state redis
-      ReplicationGroupId: !Sub ${ProjectName}-${EnvironmentName}-redis
-      SnapshotRetentionLimit: 7
-      SnapshotWindow: 03:00-04:00
-      SecurityGroupIds:
-        - !Ref RedisSecurityGroupId
-      TransitEncryptionEnabled: true
+      BucketName: !Sub ${ProjectName}-${EnvironmentName}-reports-${AWS::AccountId}-${AWS::Region}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration: !If
+        - UseVersioning
+        - Status: Enabled
+        - Status: Suspended
+      Tags:
+        - Key: Name
+          Value: !Sub ${ProjectName}-${EnvironmentName}-reports
 
 Outputs:
+  AssessmentsTableName:
+    Value: !Ref AssessmentsTable
+    Export:
+      Name: !Sub ${AWS::StackName}-AssessmentsTableName
+  SubmissionsTableName:
+    Value: !Ref SubmissionsTable
+    Export:
+      Name: !Sub ${AWS::StackName}-SubmissionsTableName
   IdempotencyTableName:
     Value: !Ref IdempotencyTable
     Export:
       Name: !Sub ${AWS::StackName}-IdempotencyTableName
-  MessageAuditTableName:
-    Value: !Ref MessageAuditTable
+  UploadsBucketName:
+    Value: !Ref UploadsBucket
     Export:
-      Name: !Sub ${AWS::StackName}-MessageAuditTableName
-  ConversationMemoryTableName:
-    Value: !Ref ConversationMemoryTable
+      Name: !Sub ${AWS::StackName}-UploadsBucketName
+  ReportsBucketName:
+    Value: !Ref ReportsBucket
     Export:
-      Name: !Sub ${AWS::StackName}-ConversationMemoryTableName
-  CampaignHintTableName:
-    Value: !Ref CampaignHintTable
-    Export:
-      Name: !Sub ${AWS::StackName}-CampaignHintTableName
-  RawPayloadBucketName:
-    Value: !Ref RawPayloadBucket
-  RedisPrimaryEndpoint:
-    Value: !GetAtt RedisReplicationGroup.PrimaryEndPoint.Address
-    Export:
-      Name: !Sub ${AWS::StackName}-RedisPrimaryEndpoint
-  RedisPort:
-    Value: !GetAtt RedisReplicationGroup.PrimaryEndPoint.Port
-    Export:
-      Name: !Sub ${AWS::StackName}-RedisPort
+      Name: !Sub ${AWS::StackName}-ReportsBucketName

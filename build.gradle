@@ -2,11 +2,10 @@ plugins {
     id 'base'
 }
 
-group = 'com.alochat'
+group = 'com.alo'
 version = '0.1.0-SNAPSHOT'
 
 subprojects {
     group = rootProject.group
     version = rootProject.version
 }
-

@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: alo-notification-service
+  threads:
+    virtual:
+      enabled: true
+  kafka:
+    bootstrap-servers: ${ALO_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: alo-notification-service
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "com.alo.contracts.events,com.alo.contracts.assessment"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+alo:
+  notification:
+    ses:
+      from-address: ${ALO_NOTIFICATION_FROM_ADDRESS:}
+  kafka:
+    resilience:
+      consumer:
+        max-attempts: ${ALO_KAFKA_RETRY_MAX_ATTEMPTS:3}
+        initial-interval-ms: ${ALO_KAFKA_RETRY_INITIAL_INTERVAL_MS:1000}
+        multiplier: ${ALO_KAFKA_RETRY_MULTIPLIER:2.0}
+        max-interval-ms: ${ALO_KAFKA_RETRY_MAX_INTERVAL_MS:10000}
+        dlq-topic: ${ALO_KAFKA_DLQ_TOPIC:alo.dlq}
+      producer:
+        circuit-breaker-name: ${ALO_KAFKA_CB_NAME:kafkaPublisher}
+        send-timeout-ms: ${ALO_KAFKA_PUBLISH_TIMEOUT_MS:5000}
+        open-state-wait-ms: ${ALO_KAFKA_CB_OPEN_WAIT_MS:10000}
+        failure-rate-threshold: ${ALO_KAFKA_CB_FAILURE_RATE_THRESHOLD:50}
+    topics:
+      assessment-notification-requested: alo.assessment.notification.requested
+
+server:
+  port: 8087
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

@@ -1,36 +1,60 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: aloChat messaging stack - Amazon MSK Serverless for Kafka transport
+Description: alo Kafka stack - low-cost MSK cluster for async assessment processing
 
 Parameters:
   ProjectName:
     Type: String
-    Default: alochat
+    Default: alo
   EnvironmentName:
     Type: String
     Default: dev
-  VpcId:
-    Type: AWS::EC2::VPC::Id
-  PrivateSubnetIds:
-    Type: CommaDelimitedList
-  KafkaClientSecurityGroupId:
-    Type: AWS::EC2::SecurityGroup::Id
+  FoundationStackName:
+    Type: String
+  KafkaVersion:
+    Type: String
+    Default: 3.6.0
+  BrokerNodeCount:
+    Type: Number
+    Default: 2
+  BrokerInstanceType:
+    Type: String
+    Default: kafka.t3.small
+  BrokerVolumeSize:
+    Type: Number
+    Default: 100
 
 Resources:
-  MskServerlessCluster:
-    Type: AWS::MSK::ServerlessCluster
+  Cluster:
+    Type: AWS::MSK::Cluster
     Properties:
       ClusterName: !Sub ${ProjectName}-${EnvironmentName}-msk
+      KafkaVersion: !Ref KafkaVersion
+      NumberOfBrokerNodes: !Ref BrokerNodeCount
+      EnhancedMonitoring: DEFAULT
+      BrokerNodeGroupInfo:
+        ClientSubnets: !Split
+          - ","
+          - !ImportValue
+            Fn::Sub: ${FoundationStackName}-PrivateSubnetIds
+        InstanceType: !Ref BrokerInstanceType
+        SecurityGroups:
+          - !ImportValue
+            Fn::Sub: ${FoundationStackName}-KafkaClientSecurityGroupId
+        StorageInfo:
+          EBSStorageInfo:
+            VolumeSize: !Ref BrokerVolumeSize
       ClientAuthentication:
-        Sasl:
-          Iam:
-            Enabled: true
-      VpcConfigs:
-        - SecurityGroups:
-            - !Ref KafkaClientSecurityGroupId
-          SubnetIds: !Ref PrivateSubnetIds
+        Unauthenticated:
+          Enabled: true
+      EncryptionInfo:
+        EncryptionInTransit:
+          ClientBroker: TLS_PLAINTEXT
+          InCluster: true
+      Tags:
+        Name: !Sub ${ProjectName}-${EnvironmentName}-msk
 
 Outputs:
-  KafkaClusterArn:
-    Value: !Ref MskServerlessCluster
+  ClusterArn:
+    Value: !Ref Cluster
     Export:
-      Name: !Sub ${AWS::StackName}-KafkaClusterArn
+      Name: !Sub ${AWS::StackName}-ClusterArn
