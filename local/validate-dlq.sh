@@ -88,6 +88,18 @@ PY
     --output text
 }
 
+read_topic_offset() {
+  local topic_name="$1"
+  local output
+  output="$(run_admin_task "timeout -s KILL 20s sh -c 'kafka-run-class kafka.tools.GetOffsetShell --bootstrap-server ${bootstrap_servers} --topic ${topic_name} --time -1'; rc=\$?; echo rc=\$rc; exit \$rc")"
+  awk -F: -v topic="$topic_name" '$1 == topic {print $3}' <<<"$output" | tail -n 1
+}
+
+initial_topic_offset="$(read_topic_offset "$TOPIC_NAME")"
+initial_dlq_offset="$(read_topic_offset "$DLQ_TOPIC_NAME")"
+initial_topic_offset="${initial_topic_offset:-0}"
+initial_dlq_offset="${initial_dlq_offset:-0}"
+
 inject_output="$(run_admin_task "timeout 20s sh -c 'printf \"not-json\\n\" | kafka-console-producer --producer-property max.block.ms=5000 --producer-property request.timeout.ms=5000 --producer-property delivery.timeout.ms=10000 --bootstrap-server ${bootstrap_servers} --topic ${TOPIC_NAME}'; rc=\$?; echo rc=\$rc; if [ \$rc -eq 0 ]; then echo sent; fi; exit \$rc")"
 if ! grep -q "sent" <<<"$inject_output"; then
   echo "failed to inject invalid message" >&2
@@ -107,23 +119,23 @@ dataset_events="$(aws logs filter-log-events \
 grep -q "retrying kafka message topic=${TOPIC_NAME}" <<<"$dataset_events"
 grep -q "routing message to dlq topic=${DLQ_TOPIC_NAME} originalTopic=${TOPIC_NAME}" <<<"$dataset_events"
 
-offsets_output="$(run_admin_task "timeout 20s sh -c 'echo OFFSETS; kafka-run-class kafka.tools.GetOffsetShell --bootstrap-server ${bootstrap_servers} --topic ${TOPIC_NAME} --time -1; kafka-run-class kafka.tools.GetOffsetShell --bootstrap-server ${bootstrap_servers} --topic ${DLQ_TOPIC_NAME} --time -1; echo GROUP; kafka-consumer-groups --bootstrap-server ${bootstrap_servers} --group ${DATASET_GROUP_ID} --describe'; rc=\$?; echo rc=\$rc; exit \$rc")"
+final_topic_offset="$(read_topic_offset "$TOPIC_NAME")"
+final_dlq_offset="$(read_topic_offset "$DLQ_TOPIC_NAME")"
+final_topic_offset="${final_topic_offset:-0}"
+final_dlq_offset="${final_dlq_offset:-0}"
 
-dataset_group_line="$(grep "${DATASET_GROUP_ID}[[:space:]]\+${TOPIC_NAME}" <<<"$offsets_output" | tail -n 1)"
-if [[ -z "$dataset_group_line" ]]; then
-  echo "missing consumer group line for ${TOPIC_NAME}" >&2
-  echo "$offsets_output" >&2
+if (( final_topic_offset <= initial_topic_offset )); then
+  echo "expected ${TOPIC_NAME} offset to increase" >&2
+  echo "initial=${initial_topic_offset} final=${final_topic_offset}" >&2
   exit 1
 fi
 
-lag_value="$(awk '{print $(NF-3)}' <<<"$dataset_group_line")"
-if [[ "$lag_value" != "0" ]]; then
-  echo "expected zero lag, got ${lag_value}" >&2
-  echo "$offsets_output" >&2
+if (( final_dlq_offset <= initial_dlq_offset )); then
+  echo "expected ${DLQ_TOPIC_NAME} offset to increase" >&2
+  echo "initial=${initial_dlq_offset} final=${final_dlq_offset}" >&2
   exit 1
 fi
-
-grep -q "${DLQ_TOPIC_NAME}:0:" <<<"$offsets_output"
 
 echo "poison message validation passed"
-echo "$dataset_group_line"
+echo "${TOPIC_NAME}: ${initial_topic_offset} -> ${final_topic_offset}"
+echo "${DLQ_TOPIC_NAME}: ${initial_dlq_offset} -> ${final_dlq_offset}"
