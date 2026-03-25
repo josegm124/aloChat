@@ -31,8 +31,10 @@ for service in "${SERVICES[@]}"; do
   fi
 
   image_uri="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/alo/dev/${service}:${TAG}"
-  aws ecr describe-repositories --region "$REGION" --repository-names "alo/dev/${service}" >/dev/null 2>&1 \
-    || aws ecr create-repository --region "$REGION" --repository-name "alo/dev/${service}" >/dev/null
+  if ! aws ecr describe-repositories --region "$REGION" --repository-names "alo/dev/${service}" >/dev/null; then
+    echo "ECR repository alo/dev/${service} is not accessible. Pre-create it or grant ecr:DescribeRepositories." >&2
+    exit 1
+  fi
 
   docker build \
     -f "$ROOT_DIR/docker/service.Dockerfile" \
