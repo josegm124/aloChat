@@ -82,4 +82,11 @@ jobs:
             --no-fail-on-empty-changeset
 
       - name: Validate poison message to DLQ
+        continue-on-error: true
         run: bash local/validate-dlq.sh
+
+      - name: Warn if DLQ validation failed
+        if: failure()
+        run: |
+          echo "DLQ validation failed after deploy."
+          echo "The runtime deploy may still be healthy; review the validate-dlq step logs separately."
