@@ -24,7 +24,7 @@ Cobertura funcional del MVP:
 2.1 Backend e infraestructura
 - Repo: aloChat
 - Ruta local: /home/jose-guerrero/Desktop/aloChat
-- Branch de trabajo actual: feature/romeBS
+- Branch principal actual: master
 
 2.2 Frontend web
 - Repo: aloFront
@@ -439,7 +439,85 @@ Rutas Next.js usadas por el frontend:
 - /api/report/finalize
 - /api/notification
 
-12. Estado real del MVP al 2026-03-24
+12. Pipeline CI/CD actual
+
+12.1 CI
+Archivo:
+- .github/workflows/ci.yml
+
+Trigger:
+- pull_request
+- push a master
+
+Responsabilidad:
+1. checkout
+2. setup Java 21
+3. chmod +x gradlew
+4. ./gradlew test
+5. ./gradlew build -x test
+6. subir test reports si falla
+
+12.2 CD Dev
+Archivo:
+- .github/workflows/deploy-dev.yml
+
+Trigger:
+- workflow_run despues del workflow CI
+- solo sobre master
+- workflow_dispatch manual
+
+Regla de ejecucion:
+- despliega solo si CI termina en success
+
+Environment GitHub requerido:
+- Environment: dev
+
+Variables esperadas en ese environment:
+- AWS_REGION=us-east-1
+- AWS_ROLE_ARN=arn:aws:iam::668778694151:role/github-actions-alochat-dev
+
+Paso a paso del deploy:
+1. checkout
+2. setup Java 21
+3. validar variables del environment
+4. aws-actions/configure-aws-credentials con OIDC
+5. definir IMAGE_TAG desde GITHUB_SHA
+6. build y push de imagenes ECR con:
+   - local/build-and-push-ecr.sh
+   - local/build-and-push-msk-admin.sh
+7. actualizar URIs en:
+   - infra/parameters/dev/runtime.json
+8. validar template:
+   - infra/runtime.yaml
+9. desplegar stack:
+   - alo-dev-runtime
+10. validar resiliencia:
+   - local/validate-dlq.sh
+
+Imagenes que despliega el pipeline:
+- alo/dev/alo-intake-service
+- alo/dev/alo-profile-service
+- alo/dev/alo-document-compliance-service
+- alo/dev/alo-dataset-compliance-service
+- alo/dev/alo-assessment-orchestrator
+- alo/dev/alo-report-service
+- alo/dev/alo-notification-service
+- alo/dev/alo-retry-router-service
+- alo/dev/alo-msk-admin
+
+Notas operacionales del pipeline:
+- el role OIDC de GitHub es:
+  - arn:aws:iam::668778694151:role/github-actions-alochat-dev
+- el trust policy acepta:
+  - repo:josegm124/aloChat:environment:dev
+  - repo:josegm124/aloChat:ref:refs/heads/master
+  - repo:josegm124/aloChat:pull_request
+- las policies del role fueron ajustadas para:
+  - ECR de los repos alo/dev/*
+  - CloudFormation
+  - iam:GetRole / iam:PassRole sobre roles alo-dev-* y alochat-dev-*
+
+13. Estado real del MVP al 2026-03-24 / 2026-03-25
 
 Implementado:
 - backend de intake
@@ -468,8 +546,9 @@ Pendientes importantes:
 - salida de SES sandbox si se quiere enviar a correos no verificados
 - cerrar completamente el retrieval runtime directo a OpenSearch sin fallback local
 - endurecer dataset flow real end-to-end
+- mas tests unitarios e integracion
 
-13. Resiliencia
+14. Resiliencia
 
 Activo hoy:
 - idempotencia en intake
@@ -481,7 +560,7 @@ Activo hoy:
 No activo como flujo principal:
 - retry diferido efectivo por alo.retry.short y alo.retry.long
 
-14. Reglas practicas para probar el MVP
+15. Reglas practicas para probar el MVP
 
 Para probar hoy desde la web:
 1. usar la web en Vercel
@@ -498,7 +577,7 @@ Para email real mientras SES este en sandbox:
 - el remitente debe estar verificado en SES
 - el destinatario tambien debe estar verificado si la cuenta sigue en sandbox
 
-15. Estado de remitente SES
+16. Estado de remitente SES
 
 Remitente configurado para pruebas:
 - conjguerrero@gmail.com
@@ -506,43 +585,16 @@ Remitente configurado para pruebas:
 Condicion:
 - si SES sigue en sandbox, usa ese mismo correo como destinatario de prueba o verifica destinatarios adicionales
 
-16. Estado de ramas y sincronizacion de repositorios
+17. Estado de ramas y sincronizacion de repositorios
 
-16.1 aloChat
-- master y origin/master NO contienen este trabajo nuevo completo
-- branch de trabajo: feature/romeBS
-- feature/romeBS tiene trabajo por commit y tambien muchos cambios locales sin commit
-- comparacion actual:
-  - master...feature/romeBS = 0 2
-- interpretacion:
-  - feature/romeBS esta 2 commits adelante de master
-  - ademas el working tree local de feature/romeBS esta sucio
-  - por lo tanto aloChat NO esta sincronizado en todas las ramas
+17.1 aloChat
+- branch actual: master
+- master y feature/romeBS sincronizadas
+- commit de referencia despues de ajustes de pipeline:
+  - 8b107ec
 
-16.2 aloFront
-- master y origin/master SI contienen el ultimo cambio de reporte/email del frontend
-- commit actual en master:
-  - 8926e12 Add final report and notification flow
-- comparacion actual:
-  - master...feature/RomeBS = 2 0
-- interpretacion:
-  - master esta 2 commits adelante de feature/RomeBS
-  - feature/RomeBS no esta sincronizada con master
-  - por lo tanto aloFront tampoco esta sincronizado en todas las ramas
-
-17. Conclusion de sincronizacion
-
-No, los cambios no estan actualizados en todas las ramas de todos los proyectos.
-
-Estado exacto:
-- aloChat:
-  - trabajo principal en feature/romeBS
-  - master atrasado
-  - muchos cambios locales aun sin commit
-- aloFront:
-  - master actualizado y empujado
-  - feature/RomeBS atrasada respecto a master
-
-La arquitectura y el MVP actual deben considerarse correctos sobre:
-- aloChat -> feature/romeBS local
-- aloFront -> master / origin/master
+17.2 aloFront
+- branch actual: master
+- master y feature/RomeBS sincronizadas
+- commit de referencia frontend:
+  - 8926e12
