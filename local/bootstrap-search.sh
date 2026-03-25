@@ -3,6 +3,10 @@ set -euo pipefail
 
 STACK_NAME="${STACK_NAME:-alo-dev-search}"
 REGION="${AWS_REGION:-us-east-1}"
+if [[ "$REGION" != "us-east-1" ]]; then
+  echo "AWS_REGION must be us-east-1" >&2
+  exit 1
+fi
 
 ENDPOINT="$(
   aws cloudformation describe-stacks \

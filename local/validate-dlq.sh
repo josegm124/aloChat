@@ -2,6 +2,10 @@
 set -euo pipefail
 
 REGION="${AWS_REGION:-us-east-1}"
+if [[ "$REGION" != "us-east-1" ]]; then
+  echo "AWS_REGION must be us-east-1" >&2
+  exit 1
+fi
 CLUSTER_NAME="${CLUSTER_NAME:-alo-dev-cluster}"
 RUNTIME_STACK_NAME="${RUNTIME_STACK_NAME:-alo-dev-runtime}"
 FOUNDATION_STACK_NAME="${FOUNDATION_STACK_NAME:-alochat-dev-foundation}"

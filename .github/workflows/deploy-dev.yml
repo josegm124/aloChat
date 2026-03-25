@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     env:
-      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_REGION: us-east-1
       AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
       FOUNDATION_STACK_NAME: alochat-dev-foundation
       RUNTIME_STACK_NAME: alo-dev-runtime
@@ -45,8 +45,12 @@ jobs:
 
       - name: Validate deploy variables
         run: |
-          if [ -z "${AWS_REGION}" ] || [ -z "${AWS_ROLE_ARN}" ]; then
-            echo "Missing dev environment vars: AWS_REGION or AWS_ROLE_ARN"
+          if [ -z "${AWS_ROLE_ARN}" ]; then
+            echo "Missing dev environment var: AWS_ROLE_ARN"
+            exit 1
+          fi
+          if [ "${AWS_REGION}" != "us-east-1" ]; then
+            echo "AWS_REGION must be us-east-1"
             exit 1
           fi
 

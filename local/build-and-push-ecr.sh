@@ -3,6 +3,10 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REGION="${AWS_REGION:-us-east-1}"
+if [[ "$REGION" != "us-east-1" ]]; then
+  echo "AWS_REGION must be us-east-1" >&2
+  exit 1
+fi
 ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
 TAG="${1:-$(date +%Y%m%d-%H%M%S)}"
 
