@@ -23,6 +23,10 @@ alo:
     storage:
       bucket: ${ALO_REPORTS_BUCKET:}
       public-base-url: ${ALO_PUBLIC_BASE_URL:http://localhost:8086}
+      endpoint: ${ALO_REPORT_STORAGE_ENDPOINT:}
+      access-key: ${ALO_REPORT_STORAGE_ACCESS_KEY:}
+      secret-key: ${ALO_REPORT_STORAGE_SECRET_KEY:}
+      path-style-enabled: ${ALO_REPORT_STORAGE_PATH_STYLE_ENABLED:false}
   kafka:
     resilience:
       consumer:

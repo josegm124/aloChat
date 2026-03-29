@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "alo.notification.ses")
 public record SesProperties(
-        String fromAddress
+        String fromAddress,
+        String mode
 ) {
 }

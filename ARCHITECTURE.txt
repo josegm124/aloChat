@@ -1,600 +1,210 @@
-ALO CERTIFAI - MVP ARCHITECTURE
+ALO CERTIFAI - ARCHITECTURE
 
-1. Objetivo del MVP
+1. Repos and branches
 
-Este repositorio implementa la base de CertifAI como una plataforma de evaluacion de cumplimiento para sistemas de IA de alto riesgo.
+- Backend repo: `/home/jose-guerrero/Desktop/aloChat`
+- Frontend repo: `/home/jose-guerrero/Desktop/aloFront`
+- Safe local-MVP branch in both repos: `feature/RBSai`
+- `master` keeps CI/CD triggers; local MVP work must stay out of `master` until explicitly merged
 
-Cobertura funcional del MVP:
-- Sectores soportados desde el dia 1:
-  - Healthcare
-  - HR
-- Marcos regulatorios base:
-  - EU AI Act
-  - GDPR
-- Idiomas:
-  - Espanol (ES)
-  - Ingles (EN)
-- Entregables al usuario:
-  - Reporte web final
-  - PDF descargable
-  - Notificacion por email con link al reporte
+2. What the MVP does
 
-2. Repositorios
+The MVP evaluates AI-system documentation for regulated use cases, starting with Healthcare and HR, and produces:
+- a structured assessment
+- a document analysis with compliance findings
+- a final web report
+- a downloadable PDF report
+- a notification payload
 
-2.1 Backend e infraestructura
-- Repo: aloChat
-- Ruta local: /home/jose-guerrero/Desktop/aloChat
-- Branch principal actual: master
+Cloud mode uses AWS-managed services.
+Local mode replaces the paid AWS dependencies with local containers so daily development does not require AWS spend.
 
-2.2 Frontend web
-- Repo: aloFront
-- Ruta local: /home/jose-guerrero/Desktop/aloFront
-- Branch desplegada en Vercel: master
+3. Backend services
 
-3. Stack tecnologico completo
+- `alo-intake-service` (`:8080`)
+  - accepts `POST /api/v1/assessments`
+  - persists assessment intake and publishes the intake event
+- `alo-profile-service` (`:8081`)
+  - resolves regulatory profile and applicability
+- `alo-document-compliance-service` (`:8082`)
+  - accepts `POST /api/v1/document-compliance/analyze`
+  - extracts PDF text and generates findings/evidence
+- `alo-dataset-compliance-service` (`:8083`)
+  - dataset-focused analysis
+- `alo-assessment-orchestrator` (`:8085`)
+  - consolidates results and requests report generation
+- `alo-report-service` (`:8086`)
+  - generates the final HTML/PDF report
+  - exposes:
+    - `POST /api/v1/reports/generate`
+    - `POST /api/v1/reports/finalize`
+    - `GET /api/v1/reports/{reportId}`
+    - `GET /api/v1/reports/{reportId}/view`
+    - `GET /api/v1/reports/{reportId}/pdf`
+- `alo-notification-service` (`:8087`)
+  - accepts `POST /api/v1/notifications/generate`
+  - sends via SES in cloud mode
+  - returns `LOCAL_DISABLED` in local mode
+- `alo-retry-router-service` (`:8088`)
+  - reserved for deferred retry routing
 
-Lenguaje y runtime:
-- Java 21
-- Spring Boot 3.5.x
-- Virtual threads para trabajo IO-bound
+4. Event topology
 
-Frontend:
-- Next.js 16
-- Vercel
+Kafka topics in the current design:
+- `alo.assessment.intake.received`
+- `alo.assessment.profile.resolved`
+- `alo.assessment.document.requested`
+- `alo.assessment.dataset.requested`
+- `alo.assessment.document.completed`
+- `alo.assessment.dataset.completed`
+- `alo.assessment.report.requested`
+- `alo.assessment.notification.requested`
+- `alo.assessment.notification.completed`
+- `alo.retry.short`
+- `alo.retry.long`
+- `alo.dlq`
 
-Infraestructura y servicios AWS:
+Current resilience strategy:
+- immediate consumer retries
+- poison-message handling with `ErrorHandlingDeserializer`
+- DLQ routing to `alo.dlq`
+- Kafka publisher circuit breaker
+
+5. Cloud architecture
+
+CloudFormation stacks used by the cloud deployment:
+- `alochat-dev-foundation`
+- `alo-dev-data`
+- `alo-dev-msk`
+- `alo-dev-search`
+- `alo-dev-runtime`
+
+AWS services used in cloud mode:
 - ECS Fargate
 - ALB
 - WAF
 - Cloud Map
 - DynamoDB
 - S3
-- Amazon MSK (Kafka)
+- Amazon MSK / Kafka
 - OpenSearch Serverless
-- AWS Bedrock
-- Amazon SES
-- CloudWatch Logs
-
-Soporte local y delivery:
-- Docker
+- Bedrock
+- SES
+- CloudWatch
 - ECR
-- GitHub Actions
 
-Observabilidad:
-- Prometheus
-- Grafana
+Important operational note:
+- the current GitHub deploy workflow only updates `alo-dev-runtime`
+- rebuilding the full cloud environment from zero still requires bringing up the base stacks first
 
-Resiliencia:
-- Kafka retries inmediatos en consumidores
-- DLQ: alo.dlq
-- Circuit breaker para publishers Kafka
-- ErrorHandlingDeserializer para poison messages
+6. Local architecture
 
-4. Stacks AWS relevantes
+Local MVP mode replaces the expensive AWS pieces with:
+- Redpanda instead of MSK
+- DynamoDB Local instead of DynamoDB
+- MinIO instead of S3
+- local-disabled notification instead of SES
 
-Stacks activos esperados:
-- alochat-dev-foundation
-- alo-dev-data
-- alo-dev-msk
-- alo-dev-search
-- alo-dev-runtime
+Local Docker services:
+- `redpanda`
+- `redpanda-init`
+- `dynamodb-local`
+- `dynamodb-init`
+- `minio`
+- `minio-init`
+- `alo-intake-service`
+- `alo-document-compliance-service`
+- `alo-report-service`
+- `alo-notification-service`
 
-4.1 alochat-dev-foundation
-Responsabilidad:
-- VPC
-- Subnets publicas y privadas
-- Security groups base
-- Networking compartido
+Local ports:
+- frontend: `127.0.0.1:3000`
+- intake: `localhost:8080`
+- document: `localhost:8082`
+- report: `localhost:8086`
+- notification: `localhost:8087`
+- DynamoDB Local: `localhost:8000`
+- MinIO API: `localhost:9000`
+- MinIO console: `localhost:9001`
+- Redpanda external listener: `localhost:19092`
 
-4.2 alo-dev-data
-Responsabilidad:
-- DynamoDB:
-  - alo-assessments
-  - alo-submissions
-  - alo-idempotency
-- S3:
-  - bucket de uploads
-  - bucket de reports
+Local buckets created automatically:
+- `alo-uploads`
+- `alo-reports`
 
-4.3 alo-dev-msk
-Responsabilidad:
-- Cluster Kafka para eventos async
+7. Local MVP flow that is already validated
 
-4.4 alo-dev-search
-Responsabilidad:
+Validated end-to-end on `feature/RBSai`:
+1. create assessment through the frontend proxy
+2. upload local PDF to document-analysis
+3. generate final report
+4. open final HTML report
+5. download final PDF
+6. generate notification payload with status `LOCAL_DISABLED`
+
+This local path does not require:
+- SES
 - OpenSearch Serverless
-- Indices regulatorios y de evidencia
-
-4.5 alo-dev-runtime
-Responsabilidad:
-- ECS cluster
-- Task definitions
-- ECS services
+- Bedrock runtime calls
+- ECS
 - ALB
-- WAF
-- Cloud Map
-- log groups por servicio
 
-5. Servicios backend y puertos
-
-5.1 alo-intake-service
-- Puerto: 8080
-- Responsabilidad:
-  - crear assessments
-  - generar assessmentId, submissionId, traceId, idempotencyKey
-  - persistir assessment/submission/idempotency
-  - publicar intake a Kafka
-- Endpoint publico:
-  - POST /api/v1/assessments
-
-5.2 alo-profile-service
-- Puerto: 8081
-- Responsabilidad:
-  - resolver regulatory profile
-  - determinar applicability para Healthcare y HR
-  - marcar frameworks aplicables
-
-5.3 alo-document-compliance-service
-- Puerto: 8082
-- Responsabilidad:
-  - recibir PDF
-  - extraer texto
-  - consultar corpus regulatorio
-  - generar EvidenceItem y ControlFinding
-- Endpoint publico:
-  - POST /api/v1/document-compliance/analyze
-
-5.4 alo-dataset-compliance-service
-- Puerto: 8083
-- Responsabilidad:
-  - analizar csv/xlsx/parquet
-  - generar findings de data governance
-
-5.5 alo-assessment-orchestrator
-- Puerto: 8085
-- Responsabilidad:
-  - consolidar findings de documento y dataset
-  - calcular trust signal y score
-  - disparar generacion de reporte
-
-5.6 alo-report-service
-- Puerto: 8086
-- Responsabilidad:
-  - generar reporte web
-  - generar PDF
-  - persistir reporte en S3
-  - exponer reporte por HTTP
-- Endpoints publicos:
-  - POST /api/v1/reports/generate
-  - POST /api/v1/reports/finalize
-  - GET /api/v1/reports/{reportId}
-  - GET /api/v1/reports/{reportId}/view
-  - GET /api/v1/reports/{reportId}/pdf
-
-5.7 alo-notification-service
-- Puerto: 8087
-- Responsabilidad:
-  - generar notificacion final
-  - enviar email por SES
-- Endpoint publico:
-  - POST /api/v1/notifications/generate
-
-5.8 alo-retry-router-service
-- Puerto: 8088
-- Responsabilidad:
-  - pieza reservada para retry routing diferido
-- Nota:
-  - hoy la estrategia activa es retry inmediato + DLQ
-  - alo.retry.short y alo.retry.long existen pero no son el flujo principal en produccion actual
-
-6. Topologia Kafka exacta
-
-Topics implementados:
-- alo.assessment.intake.received
-- alo.assessment.profile.resolved
-- alo.assessment.document.requested
-- alo.assessment.dataset.requested
-- alo.assessment.document.completed
-- alo.assessment.dataset.completed
-- alo.assessment.report.requested
-- alo.assessment.notification.requested
-- alo.assessment.notification.completed
-- alo.retry.short
-- alo.retry.long
-- alo.dlq
-
-Flujo de eventos activo:
-1. alo-intake-service publica a alo.assessment.intake.received
-2. alo-profile-service consume intake y publica a alo.assessment.profile.resolved
-3. alo-document-compliance-service consume profile y publica a alo.assessment.document.requested / completed
-4. alo-dataset-compliance-service consume profile y publica a alo.assessment.dataset.requested / completed
-5. alo-assessment-orchestrator consume resultados y publica a alo.assessment.report.requested
-6. alo-report-service genera reporte, lo persiste y publica a alo.assessment.notification.requested
-7. alo-notification-service envia email y publica a alo.assessment.notification.completed
-
-7. Persistencia y storage
-
-7.1 DynamoDB
-- alo-assessments
-  - assessment envelope durable
-  - estado del assessment
-- alo-submissions
-  - payload de intake y metadata original
-- alo-idempotency
-  - control de duplicados
-
-7.2 S3
-- Uploads bucket
-  - PDF obligatorio
-  - dataset opcional
-- Reports bucket
-  - report.json
-  - report.html
-  - report.pdf
-
-7.3 OpenSearch Serverless
-Indices iniciales:
-- regulatory_corpus
-- control_profiles
-- evidence_index
-
-Corpus legal inicial cargado:
-- EU AI Act
-  - Annex III para Healthcare y HR
-  - articulos 9, 10, 11, 12, 13, 14, 15, 17
-- GDPR
-  - articulos 5, 6, 9, 13, 14, 22, 25, 32, 35
-
-8. RAG y analisis documental
-
-Estado actual:
-- El servicio documental ya hace analisis real del PDF.
-- Extrae texto con PDFBox.
-- Genera findings a partir del corpus regulatorio.
-- El bootstrap de search ya crea indices e ingesta corpus legal.
-- Bedrock ya se usa para embeddings del corpus.
-
-Nota operacional importante:
-- El retrieval hibrido con OpenSearch/Bedrock esta implementado.
-- Si la llamada runtime a OpenSearch falla, el servicio documental usa fallback con corpus regulatorio empaquetado localmente.
-- Eso permite que el endpoint documental siga respondiendo aunque la integracion runtime de search no este perfecta.
-
-9. Dominio canonico principal
-
-Objeto raiz:
-- AssessmentEnvelope
-
-Campos base:
-- assessmentId
-- submissionId
-- tenantId
-- organizationId
-- userId
-- traceId
-- idempotencyKey
-- preferredLanguage
-- sector
-- useCaseType
-- aiSystemCategory
-- geography
-- regulatoryProfileId
-- datasetProvided
-- artifacts
-- status
-- createdAt
-- updatedAt
-- metadata
-
-Objetos importantes:
-- ArtifactRef
-- RegulatoryProfile
-- DocumentAnalysisResult
-- DatasetAnalysisResult
-- ControlFinding
-- EvidenceItem
-- ConsolidatedAssessmentResult
-- GeneratedAssessmentReport
-- GeneratedNotification
-
-10. Flujo end-to-end completo del MVP
-
-10.1 Web y acceso
-Tecnologias:
-- Next.js
-- Vercel
-- ALB
-- WAF
-- HMAC entre frontend y backend
-
-Paso a paso:
-1. El usuario abre la web desplegada en Vercel.
-2. La app presenta landing, signup y login.
-3. Actualmente signup/login del portal son locales en frontend; no estan conectados todavia a Cognito real.
-4. El frontend envia requests al backend usando ALOCHAT_API_BASE_URL y firma HMAC.
-
-10.2 Creacion de assessment
-Tecnologias:
-- Next.js API routes
-- alo-intake-service
-- DynamoDB
-- Kafka
-
-Paso a paso:
-1. El usuario llena el formulario de assessment.
-2. El frontend arma CreateAssessmentRequest con metadata del sistema y artifact DOCUMENT_PDF.
-3. POST /api/assessment en Next.js proxya al backend.
-4. alo-intake-service valida el request.
-5. alo-intake-service genera assessmentId, submissionId, traceId e idempotencyKey.
-6. alo-intake-service persiste en DynamoDB:
-   - alo-assessments
-   - alo-submissions
-   - alo-idempotency
-7. alo-intake-service publica AssessmentIntakeReceivedEvent a alo.assessment.intake.received.
-
-10.3 Profiling regulatorio
-Tecnologias:
-- alo-profile-service
-- Kafka
-
-Paso a paso:
-1. alo-profile-service consume alo.assessment.intake.received.
-2. Resuelve sector, geografia y categoria de IA.
-3. Construye regulatoryProfileId.
-4. Determina frameworks aplicables:
-   - EU_AI_ACT
-   - GDPR
-5. Publica ProfileResolvedEvent.
-
-10.4 Analisis documental
-Tecnologias:
-- alo-document-compliance-service
-- PDFBox
-- OpenSearch Serverless
-- AWS Bedrock
-- Kafka
-
-Paso a paso:
-1. El frontend envia el PDF a POST /api/v1/document-compliance/analyze.
-2. alo-document-compliance-service extrae texto del PDF.
-3. Genera preview y evidencia estructurada.
-4. Consulta el corpus regulatorio.
-5. Genera findings por control y severidad.
-6. Devuelve DocumentAnalysisResult.
-7. En el flujo async interno tambien publica completion event para el orchestrator.
-
-10.5 Analisis de dataset
-Tecnologias:
-- alo-dataset-compliance-service
-- Kafka
-
-Paso a paso:
-1. Si datasetProvided=true, el flujo genera dataset request.
-2. alo-dataset-compliance-service analiza csv/xlsx/parquet.
-3. Genera findings de governance, calidad y riesgo.
-4. Publica DatasetAnalysisCompletedEvent.
-
-10.6 Consolidacion
-Tecnologias:
-- alo-assessment-orchestrator
-- Kafka
-
-Paso a paso:
-1. alo-assessment-orchestrator consume document.completed y dataset.completed.
-2. Correlaciona por assessmentId.
-3. Consolida findings.
-4. Calcula:
-   - overallScore
-   - compliantCount
-   - partialCount
-   - gapCount
-   - criticalGapCount
-   - trustSignal
-5. Publica ReportGenerationRequestedEvent.
-
-10.7 Generacion del reporte final
-Tecnologias:
-- alo-report-service
-- PDFBox
-- S3
-
-Paso a paso:
-1. alo-report-service recibe ConsolidatedAssessmentResult.
-2. Genera:
-   - WebAssessmentReport
-   - PdfReportArtifact
-3. Persiste en S3:
-   - report.json
-   - report.html
-   - report.pdf
-4. Devuelve y expone:
-   - reportAccessUrl
-   - pdfDownloadUrl
-
-10.8 Email final
-Tecnologias:
-- alo-notification-service
-- Amazon SES
-
-Paso a paso:
-1. alo-notification-service genera subject y body bilingue.
-2. Usa SES para enviar el correo real.
-3. Publica NotificationCompletedEvent.
-4. El usuario recibe email con el link al reporte.
-
-11. Frontend y variables de entorno
-
-Variables de Vercel actualmente usadas:
-- ALOCHAT_API_BASE_URL
-- ALOCHAT_WEB_TENANT_ID
-- ALOCHAT_WEB_SIGNING_SECRET
-
-Uso actual:
-- ALOCHAT_API_BASE_URL debe apuntar al ALB del backend
-- valor actual esperado:
-  - http://alo-dev-alb-1607272911.us-east-1.elb.amazonaws.com
-
-Rutas Next.js usadas por el frontend:
-- /api/assessment
-- /api/document-analysis
-- /api/report/finalize
-- /api/notification
-
-12. Pipeline CI/CD actual
-
-12.1 CI
-Archivo:
-- .github/workflows/ci.yml
-
-Trigger:
-- pull_request
-- push a master
-
-Responsabilidad:
-1. checkout
-2. setup Java 21
-3. chmod +x gradlew
-4. ./gradlew test
-5. ./gradlew build -x test
-6. subir test reports si falla
-
-12.2 CD Dev
-Archivo:
-- .github/workflows/deploy-dev.yml
-
-Trigger:
-- workflow_run despues del workflow CI
-- solo sobre master
-- workflow_dispatch manual
-
-Regla de ejecucion:
-- despliega solo si CI termina en success
-
-Environment GitHub requerido:
-- Environment: dev
-
-Variables esperadas en ese environment:
-- AWS_REGION=us-east-1
-- AWS_ROLE_ARN=arn:aws:iam::668778694151:role/github-actions-alochat-dev
-
-Paso a paso del deploy:
-1. checkout
-2. setup Java 21
-3. validar variables del environment
-4. aws-actions/configure-aws-credentials con OIDC
-5. definir IMAGE_TAG desde GITHUB_SHA
-6. build y push de imagenes ECR con:
-   - local/build-and-push-ecr.sh
-   - local/build-and-push-msk-admin.sh
-7. actualizar URIs en:
-   - infra/parameters/dev/runtime.json
-8. validar template:
-   - infra/runtime.yaml
-9. desplegar stack:
-   - alo-dev-runtime
-10. validar resiliencia:
-   - local/validate-dlq.sh
-
-Imagenes que despliega el pipeline:
-- alo/dev/alo-intake-service
-- alo/dev/alo-profile-service
-- alo/dev/alo-document-compliance-service
-- alo/dev/alo-dataset-compliance-service
-- alo/dev/alo-assessment-orchestrator
-- alo/dev/alo-report-service
-- alo/dev/alo-notification-service
-- alo/dev/alo-retry-router-service
-- alo/dev/alo-msk-admin
-
-Notas operacionales del pipeline:
-- el role OIDC de GitHub es:
-  - arn:aws:iam::668778694151:role/github-actions-alochat-dev
-- el trust policy acepta:
-  - repo:josegm124/aloChat:environment:dev
-  - repo:josegm124/aloChat:ref:refs/heads/master
-  - repo:josegm124/aloChat:pull_request
-- las policies del role fueron ajustadas para:
-  - ECR de los repos alo/dev/*
-  - CloudFormation
-  - iam:GetRole / iam:PassRole sobre roles alo-dev-* y alochat-dev-*
-
-13. Estado real del MVP al 2026-03-24 / 2026-03-25
-
-Implementado:
-- backend de intake
-- backend de profiling
-- analisis documental real
-- analisis dataset skeleton
-- consolidacion async por Kafka
-- retries inmediatos + DLQ
-- circuit breaker de publishers Kafka
-- reporte final web
-- PDF descargable
-- email real por SES
-- frontend con flujo para:
-  - crear cuenta local
-  - login local
-  - crear assessment
-  - subir PDF
-  - generar reporte final
-  - abrir reporte web
-  - descargar PDF
-  - disparar notificacion por correo
-
-Pendientes importantes:
-- Cognito real para signup/login
-- upload real a S3 desde frontend con presigned URLs
-- salida de SES sandbox si se quiere enviar a correos no verificados
-- cerrar completamente el retrieval runtime directo a OpenSearch sin fallback local
-- endurecer dataset flow real end-to-end
-- mas tests unitarios e integracion
-
-14. Resiliencia
-
-Activo hoy:
-- idempotencia en intake
-- retries inmediatos en listeners Kafka
-- poison message handling
-- DLQ: alo.dlq
-- circuit breaker para publishers Kafka
-
-No activo como flujo principal:
-- retry diferido efectivo por alo.retry.short y alo.retry.long
-
-15. Reglas practicas para probar el MVP
-
-Para probar hoy desde la web:
-1. usar la web en Vercel
-2. crear cuenta local
-3. hacer login
-4. cargar PDF
-5. esperar DocumentAnalysisResult
-6. esperar PublishedReportResponse
-7. abrir reportAccessUrl
-8. descargar pdfDownloadUrl
-9. validar email en la bandeja del destinatario
-
-Para email real mientras SES este en sandbox:
-- el remitente debe estar verificado en SES
-- el destinatario tambien debe estar verificado si la cuenta sigue en sandbox
-
-16. Estado de remitente SES
-
-Remitente configurado para pruebas:
-- conjguerrero@gmail.com
-
-Condicion:
-- si SES sigue en sandbox, usa ese mismo correo como destinatario de prueba o verifica destinatarios adicionales
-
-17. Estado de ramas y sincronizacion de repositorios
-
-17.1 aloChat
-- branch actual: master
-- master y feature/romeBS sincronizadas
-- commit de referencia despues de ajustes de pipeline:
-  - 8b107ec
-
-17.2 aloFront
-- branch actual: master
-- master y feature/RomeBS sincronizadas
-- commit de referencia frontend:
-  - 8926e12
+8. Frontend routing
+
+Frontend repo path:
+- `/home/jose-guerrero/Desktop/aloFront`
+
+The frontend server-side routes proxy to backend services:
+- `/api/assessment`
+- `/api/document-analysis`
+- `/api/report/finalize`
+- `/api/notification`
+
+For local mode, the frontend now supports:
+- service-specific local URLs
+- `ALOCHAT_LOCAL_MODE=true` to prefer the built-in local service map
+
+9. CI/CD
+
+Current GitHub Actions structure:
+- `CI`
+  - runs on PRs and pushes to `master`
+  - runs tests/build only
+- `CD Dev`
+  - runs after CI succeeds
+  - intended for the AWS dev runtime
+  - uses GitHub OIDC and the AWS role configured for the repo
+
+Implication:
+- pushing to `master` can trigger deployment work
+- local MVP changes should stay on `feature/RBSai` until deliberately merged
+
+10. Local runbook
+
+Backend:
+- `cd /home/jose-guerrero/Desktop/aloChat`
+- `bash local/run-local.sh`
+
+Frontend:
+- `cd /home/jose-guerrero/Desktop/aloFront`
+- `ALOCHAT_LOCAL_MODE=true npm run start -- --hostname 127.0.0.1 --port 3000`
+
+Stop local stack:
+- `cd /home/jose-guerrero/Desktop/aloChat`
+- `bash local/stop-local.sh`
+
+11. Current known scope boundaries
+
+Local MVP currently proves:
+- assessment intake
+- PDF analysis
+- report generation
+- report HTML/PDF access
+- notification generation without real email
+
+Local MVP does not currently prove:
+- real SES delivery
+- full AWS infrastructure
+- real OpenSearch Serverless access
+- Bedrock runtime retrieval
+- ECS/Fargate behavior

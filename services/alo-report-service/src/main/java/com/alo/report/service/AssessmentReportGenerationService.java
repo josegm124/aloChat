@@ -209,7 +209,7 @@ public class AssessmentReportGenerationService {
     }
 
     private void writeLine(PDPageContentStream contentStream, String value) throws IOException {
-        contentStream.showText(value);
+        contentStream.showText(sanitizePdfText(value));
         contentStream.newLine();
     }
 
@@ -218,6 +218,18 @@ public class AssessmentReportGenerationService {
             return value == null ? "" : value;
         }
         return value.substring(0, maxLength - 3) + "...";
+    }
+
+    private String sanitizePdfText(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value
+                .replace("\r", " ")
+                .replace("\n", " ")
+                .replace("\t", " ")
+                .replaceAll("\\s{2,}", " ")
+                .trim();
     }
 
     private String escapeHtml(String value) {

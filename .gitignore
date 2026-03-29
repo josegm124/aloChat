@@ -6,5 +6,4 @@ out/
 *.iml
 __pycache__/
 *.pyc
-*.md
-docs/
+local/logs/
