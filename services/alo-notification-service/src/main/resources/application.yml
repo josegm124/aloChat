@@ -22,6 +22,7 @@ alo:
   notification:
     ses:
       from-address: ${ALO_NOTIFICATION_FROM_ADDRESS:}
+      mode: ${ALO_NOTIFICATION_MODE:ses}
   kafka:
     resilience:
       consumer:

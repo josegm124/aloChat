@@ -31,6 +31,9 @@ public class SesEmailDeliveryService {
             String subject,
             String body
     ) {
+        if (isDisabledMode()) {
+            return new DeliveryResult("LOCAL_DISABLED", null);
+        }
         if (recipients == null || recipients.isEmpty() || recipients.stream().allMatch(this::isPlaceholderRecipient)) {
             return new DeliveryResult("SKIPPED", null);
         }
@@ -55,6 +58,10 @@ public class SesEmailDeliveryService {
 
     private boolean isPlaceholderRecipient(String recipient) {
         return recipient == null || recipient.endsWith("@alo.local");
+    }
+
+    private boolean isDisabledMode() {
+        return sesProperties.mode() != null && sesProperties.mode().equalsIgnoreCase("disabled");
     }
 
     public record DeliveryResult(

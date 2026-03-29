@@ -5,6 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "alo.report.storage")
 public record ReportStorageProperties(
         String bucket,
-        String publicBaseUrl
+        String publicBaseUrl,
+        String endpoint,
+        String accessKey,
+        String secretKey,
+        boolean pathStyleEnabled
 ) {
 }
